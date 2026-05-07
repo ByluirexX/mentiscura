@@ -1,2 +1,0 @@
-[phases.setup]
-aptPkgs = ["libfreetype6-dev", "libpq-dev", "gcc"]
