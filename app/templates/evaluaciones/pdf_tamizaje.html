@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<style>
+/* ===== PAGINA ===== */
+@page {
+    size: letter;
+    margin: 1.8cm 1.5cm 2cm 1.5cm;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    font-size: 9.5pt;
+    color: #1a1a1a;
+    margin: 0;
+    padding: 0;
+}
+
+/* ===== ENCABEZADO ===== */
+.enc-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 6px;
+}
+.enc-logo { width: 64px; vertical-align: middle; }
+.enc-logo img { width: 60px; }
+.enc-titulo { vertical-align: middle; padding-left: 10px; }
+.enc-titulo h1 { font-size: 12pt; font-weight: bold; color: #2c5282; margin: 0 0 2px 0; }
+.enc-titulo p  { font-size: 8pt; color: #555; margin: 0; }
+.linea-doble { border-top: 3px double #2c5282; margin: 4px 0 10px 0; }
+
+/* ===== SECCIÓN TÍTULO ===== */
+.seccion-titulo {
+    font-size: 8pt;
+    font-weight: bold;
+    background-color: #2c5282;
+    color: #ffffff;
+    padding: 3px 8px;
+    margin: 14px 0 6px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ===== DATOS DEL DISCENTE ===== */
+.datos-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8.5pt;
+}
+.datos-tabla td {
+    padding: 3px 6px;
+    vertical-align: top;
+    width: 33%;
+}
+.dato-label { color: #666; font-size: 7.5pt; }
+.dato-valor { font-weight: bold; }
+
+/* ===== RESULTADO GENERAL ===== */
+.res-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 8px;
+}
+.res-tabla td {
+    border: 1px solid #ccc;
+    padding: 6px 10px;
+    text-align: center;
+    vertical-align: middle;
+    width: 25%;
+}
+.res-num { font-size: 18pt; font-weight: bold; color: #2c5282; }
+.res-label { font-size: 7.5pt; color: #666; }
+.res-nivel { font-size: 9.5pt; font-weight: bold; }
+
+/* ===== PUNTAJES SUSTANCIA ===== */
+.sust-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 8px;
+    font-size: 8pt;
+}
+.sust-tabla th {
+    background-color: #2c5282;
+    color: #fff;
+    padding: 3px 6px;
+    text-align: left;
+}
+.sust-tabla td { border: 1px solid #ddd; padding: 3px 6px; }
+
+/* ===== PREGUNTA ===== */
+.pregunta-bloque {
+    border: 1px solid #ddd;
+    margin-bottom: 8px;
+    page-break-inside: avoid;
+}
+.pregunta-encabezado {
+    background-color: #f0f4f8;
+    padding: 4px 8px;
+    font-size: 8.5pt;
+    font-weight: bold;
+}
+.pregunta-encabezado.critica { background-color: #fff5f5; color: #c53030; }
+.pregunta-num { color: #2c5282; }
+.critica-badge {
+    font-size: 7pt;
+    background-color: #c53030;
+    color: #fff;
+    padding: 1px 4px;
+    margin-left: 4px;
+}
+.sust-badge {
+    font-size: 7pt;
+    background-color: #555;
+    color: #fff;
+    padding: 1px 4px;
+    margin-left: 4px;
+}
+
+.opciones-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8pt;
+}
+.opciones-tabla td { padding: 3px 8px; }
+.opciones-tabla tr.sel { background-color: #ebf8ff; font-weight: bold; }
+.check-col { width: 18px; text-align: center; color: #2b6cb0; font-weight: bold; }
+.val-col  { width: 24px; text-align: center; }
+.val-badge {
+    background-color: #e2e8f0;
+    padding: 1px 4px;
+    font-size: 7.5pt;
+    font-weight: bold;
+}
+.val-badge-sel {
+    background-color: #2b6cb0;
+    color: #fff;
+    padding: 1px 4px;
+    font-size: 7.5pt;
+    font-weight: bold;
+}
+.sel-border { border-left: 3px solid #2b6cb0; }
+
+/* ===== GUÍA DE CALIFICACIÓN ===== */
+.guia-box {
+    border: 1px solid #bee3f8;
+    background-color: #ebf8ff;
+    padding: 8px 12px;
+    font-size: 8.5pt;
+    page-break-inside: avoid;
+}
+.guia-box h6 { color: #2c5282; font-weight: bold; margin: 0 0 5px 0; font-size: 9pt; }
+.guia-box ul { margin: 4px 0; padding-left: 16px; }
+.guia-box li { margin-bottom: 2px; }
+
+/* ===== ESCALA DE RIESGO ===== */
+.escala-tabla {
+    border-collapse: collapse;
+    font-size: 8pt;
+    margin-top: 4px;
+}
+.escala-tabla th {
+    background-color: #2c5282;
+    color: #fff;
+    padding: 3px 8px;
+    text-align: left;
+}
+.escala-tabla td { border: 1px solid #ccc; padding: 3px 8px; }
+.r-bajo    { background-color: #c6f6d5; }
+.r-info    { background-color: #bee3f8; }
+.r-warning { background-color: #fefcbf; }
+.r-orange  { background-color: #fed7aa; }
+.r-danger  { background-color: #fed7d7; }
+
+/* ===== PIE DE PÁGINA ===== */
+.pie {
+    border-top: 1px solid #ccc;
+    margin-top: 20px;
+    padding-top: 5px;
+    font-size: 7.5pt;
+    color: #888;
+}
+.pie-tabla { width: 100%; border-collapse: collapse; }
+</style>
+</head>
+<body>
+
+<!-- ENCABEZADO -->
+<table class="enc-tabla">
+    <tr>
+        <td class="enc-logo">
+            <img src="/static/images/logo_mentis_cura.png" alt="Mentis Cura">
+        </td>
+        <td class="enc-titulo">
+            <h1>Mentis Cura — Reporte de Tamizaje</h1>
+            <p>
+                {{ evaluacion.cuestionario.codigo }} — {{ evaluacion.cuestionario.nombre }}
+                &nbsp;|&nbsp;
+                Fecha: {{ evaluacion.fecha_evaluacion.strftime('%d/%m/%Y %H:%M') }}
+                &nbsp;|&nbsp;
+                Evaluación #{{ evaluacion.id }}
+            </p>
+        </td>
+    </tr>
+</table>
+<div class="linea-doble"></div>
+
+<!-- DATOS DEL DISCENTE -->
+<div class="seccion-titulo">Datos del Discente</div>
+<table class="datos-tabla">
+    <tr>
+        <td>
+            <div class="dato-label">Nombre completo</div>
+            <div class="dato-valor">{{ evaluacion.usuario.nombre_completo() }}</div>
+        </td>
+        <td>
+            <div class="dato-label">Matrícula</div>
+            <div class="dato-valor">{{ evaluacion.usuario.matricula or '—' }}</div>
+        </td>
+        <td>
+            <div class="dato-label">Edad</div>
+            <div class="dato-valor">{{ evaluacion.usuario.edad or '—' }} años</div>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <div class="dato-label">Año que cursa</div>
+            <div class="dato-valor">{{ evaluacion.usuario.anio_cursa or '—' }}° Año</div>
+        </td>
+        <td>
+            <div class="dato-label">Grupo</div>
+            <div class="dato-valor">{{ evaluacion.usuario.get_grupo_display() }}</div>
+        </td>
+        <td>
+            <div class="dato-label">Carrera</div>
+            <div class="dato-valor">{{ evaluacion.usuario.get_carrera_display() }}</div>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <div class="dato-label">Compañía</div>
+            <div class="dato-valor">{{ evaluacion.usuario.get_compania_display() }}</div>
+        </td>
+        <td>
+            <div class="dato-label">Sexo</div>
+            <div class="dato-valor">{{ evaluacion.usuario.get_sexo_display() }}</div>
+        </td>
+        <td>
+            <div class="dato-label">Estado civil</div>
+            <div class="dato-valor">{{ evaluacion.usuario.get_estado_civil_display() }}</div>
+        </td>
+    </tr>
+</table>
+
+<!-- RESULTADO GENERAL -->
+<div class="seccion-titulo">Resultado General</div>
+<table class="res-tabla">
+    <tr>
+        <td>
+            <div class="res-num">{{ evaluacion.puntaje_total }}</div>
+            <div class="res-label">Puntaje Total</div>
+        </td>
+        <td>
+            <div class="res-num" style="color:#888;">/ {{ evaluacion.cuestionario.puntaje_maximo }}</div>
+            <div class="res-label">Puntaje Máximo</div>
+        </td>
+        <td style="background-color:
+            {% if evaluacion.color_riesgo() == 'success' %}#c6f6d5
+            {% elif evaluacion.color_riesgo() == 'info' %}#bee3f8
+            {% elif evaluacion.color_riesgo() == 'warning' %}#fefcbf
+            {% elif evaluacion.color_riesgo() == 'orange' %}#fed7aa
+            {% else %}#fed7d7{% endif %};">
+            <div class="res-nivel">{{ evaluacion.etiqueta_riesgo() }}</div>
+            <div class="res-label">Nivel de Riesgo</div>
+        </td>
+        <td style="{% if evaluacion.alerta_pregunta_critica %}background-color:#fed7d7;{% endif %}">
+            {% if evaluacion.alerta_pregunta_critica %}
+            <div class="res-nivel" style="color:#c53030;">&#9888; ALERTA CRÍTICA</div>
+            <div class="res-label">Pregunta crítica positiva</div>
+            {% else %}
+            <div class="res-label" style="color:#aaa;">Sin alerta crítica</div>
+            {% endif %}
+        </td>
+    </tr>
+</table>
+
+<!-- PUNTAJES POR SUSTANCIA (solo ASSIST) -->
+{% if puntajes_sustancia %}
+{% set sustancias_nombres = {
+    'tabaco': 'Tabaco', 'alcohol': 'Alcohol', 'cannabis': 'Cannabis',
+    'cocaina': 'Cocaína', 'anfetaminas': 'Anfetaminas', 'inhalantes': 'Inhalantes',
+    'tranquilizantes': 'Tranquilizantes', 'alucinogenos': 'Alucinógenos', 'opiaceos': 'Opiáceos'
+} %}
+<div class="seccion-titulo">Puntajes por Sustancia (SSIS)</div>
+<table class="sust-tabla">
+    <thead>
+        <tr>
+            <th>Sustancia</th>
+            <th>SSIS</th>
+            <th>Nivel de Riesgo</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ps in puntajes_sustancia %}
+        <tr style="background-color:
+            {% if ps.color_riesgo() == 'success' %}#c6f6d5
+            {% elif ps.color_riesgo() == 'warning' %}#fefcbf
+            {% else %}#fed7d7{% endif %};">
+            <td>{{ sustancias_nombres.get(ps.sustancia, ps.sustancia) }}</td>
+            <td><strong>{{ ps.puntaje }}</strong></td>
+            <td>{{ ps.etiqueta_riesgo() }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<!-- PREGUNTAS Y RESPUESTAS -->
+<div class="seccion-titulo">Preguntas y Respuestas</div>
+
+{% for pregunta in preguntas %}
+{% set opciones = pregunta.obtener_opciones_ordenadas() %}
+{% set valor_sel = respuestas_dict.get(pregunta.id, none) %}
+<div class="pregunta-bloque">
+    <div class="pregunta-encabezado {% if pregunta.es_critica %}critica{% endif %}">
+        <span class="pregunta-num">{{ pregunta.orden }}.</span>
+        {{ pregunta.texto }}
+        {% if pregunta.es_critica %}
+        <span class="critica-badge">CRITICA</span>
+        {% endif %}
+        {% if pregunta.sustancia %}
+        <span class="sust-badge">{{ pregunta.sustancia | capitalize }}</span>
+        {% endif %}
+    </div>
+    <table class="opciones-tabla">
+        {% for opcion in opciones %}
+        <tr class="{% if valor_sel == opcion.valor %}sel{% endif %}" style="{% if valor_sel == opcion.valor %}border-left: 3px solid #2b6cb0;{% endif %}">
+            <td class="check-col">
+                {% if valor_sel == opcion.valor %}&#10003;{% else %}&bull;{% endif %}
+            </td>
+            <td class="val-col">
+                {% if valor_sel == opcion.valor %}
+                <span class="val-badge-sel">{{ opcion.valor }}</span>
+                {% else %}
+                <span class="val-badge">{{ opcion.valor }}</span>
+                {% endif %}
+            </td>
+            <td>{{ opcion.texto }}</td>
+        </tr>
+        {% endfor %}
+        {% if valor_sel is none %}
+        <tr><td colspan="3" style="color:#c53030; font-style:italic; padding:3px 8px;">Sin respuesta registrada</td></tr>
+        {% endif %}
+    </table>
+</div>
+{% endfor %}
+
+<!-- GUÍA DE CALIFICACIÓN -->
+<div class="seccion-titulo">Guía de Calificación</div>
+<div class="guia-box">
+{% set cod = evaluacion.cuestionario.codigo %}
+{% if cod in ('PHQ-2', 'PHQ-9') %}
+    <h6>PHQ — Patient Health Questionnaire</h6>
+    <p style="margin:0 0 4px 0;"><strong>Cálculo del puntaje:</strong> Sumar los valores de todas las respuestas (0–3 por pregunta).</p>
+    <p style="margin:0 0 4px 0;"><strong>Escala de respuesta:</strong></p>
+    <ul>
+        <li>0 = Para nada</li>
+        <li>1 = Varios días</li>
+        <li>2 = Más de la mitad de los días</li>
+        <li>3 = Casi todos los días</li>
+    </ul>
+    {% if cod == 'PHQ-2' %}
+    <p style="margin:0;"><strong>Punto de corte:</strong> Puntaje &ge; 3 indica tamizaje positivo para depresión; se recomienda aplicar PHQ-9.</p>
+    {% else %}
+    <p style="margin:0 0 3px 0;"><strong>Pregunta 9 (ideación suicida):</strong> Cualquier respuesta &ge; 1 genera alerta crítica independientemente del puntaje total.</p>
+    <p style="margin:0;"><strong>Puntaje máximo:</strong> 27 puntos (9 preguntas × 3 puntos).</p>
+    {% endif %}
+
+{% elif cod == 'AUDIT' %}
+    <h6>AUDIT — Alcohol Use Disorders Identification Test (OMS)</h6>
+    <p style="margin:0 0 4px 0;"><strong>Cálculo del puntaje:</strong> Sumar las respuestas de las 10 preguntas.</p>
+    <ul>
+        <li>Preguntas 1–8: valores 0, 1, 2, 3, 4</li>
+        <li>Preguntas 9–10: valores 0, 2, 4</li>
+    </ul>
+    <p style="margin:0;"><strong>Puntaje máximo:</strong> 40 puntos.</p>
+
+{% elif cod == 'ASSIST' %}
+    <h6>ASSIST — Alcohol, Smoking and Substance Involvement Screening Test (OMS)</h6>
+    <p style="margin:0 0 4px 0;"><strong>Q1:</strong> Pregunta de cribado (uso en la vida). Si la respuesta es "No" para una sustancia, su SSIS = 0.</p>
+    <p style="margin:0 0 4px 0;"><strong>SSIS por sustancia:</strong> Suma de respuestas Q2 + Q3 + Q4 + Q5 + Q6 + Q7 para cada sustancia reportada en Q1.</p>
+    <p style="margin:0 0 4px 0;"><strong>Q8 — Uso inyectado:</strong> Pregunta crítica. Cualquier respuesta positiva genera alerta; "Sí (últimos 3 meses)" = riesgo máximo.</p>
+    <p style="margin:0;"><strong>Puntaje máximo SSIS:</strong> 39 puntos por sustancia.</p>
+
+{% elif cod in ('IDARE', 'IDERE') %}
+    <h6>IDARE/IDERE — Inventario de Ansiedad Estado-Rasgo</h6>
+    <p style="margin:0 0 4px 0;"><strong>Cálculo:</strong> Sumar las respuestas. Algunos ítems tienen puntuación inversa según el instrumento original.</p>
+    <p style="margin:0;"><strong>Puntaje total:</strong> Suma directa de los valores seleccionados en esta aplicación.</p>
+
+{% elif cod == 'ADNM-8' %}
+    <h6>ADNM-8 — Adjustment Disorder New Module (versión breve)</h6>
+    <p style="margin:0 0 4px 0;"><strong>Cálculo:</strong> Los ítems 1–4 evalúan preocupación e interferencia (0–3 cada uno).</p>
+    <p style="margin:0;"><strong>Punto de corte:</strong> &ge; 8 indica indicador positivo para trastorno adaptativo.</p>
+
+{% elif cod == 'ADNM-20' %}
+    <h6>ADNM-20 — Adjustment Disorder New Module (versión completa)</h6>
+    <p style="margin:0 0 4px 0;"><strong>Cálculo:</strong> Suma de todos los ítems. Evalúa presencia e interferencia de síntomas de trastorno adaptativo tras un evento estresante.</p>
+    <p style="margin:0;"><strong>Puntaje máximo:</strong> {{ evaluacion.cuestionario.puntaje_maximo }} puntos.</p>
+
+{% else %}
+    <p style="margin:0;"><strong>Puntaje total:</strong> Suma de todos los valores de respuesta seleccionados. Puntaje máximo: {{ evaluacion.cuestionario.puntaje_maximo }}.</p>
+{% endif %}
+</div>
+
+<!-- ESCALA DE RIESGO -->
+<div class="seccion-titulo">Escala de Riesgo de Referencia</div>
+
+{% set cod = evaluacion.cuestionario.codigo %}
+{% if cod == 'PHQ-2' %}
+<table class="escala-tabla">
+    <thead><tr><th>Puntaje</th><th>Clasificación</th><th>Interpretación</th></tr></thead>
+    <tbody>
+        <tr class="r-bajo"><td>0 – 2</td><td>Negativo</td><td>Sin indicador de depresión</td></tr>
+        <tr class="r-danger"><td>3 – 6</td><td>Positivo</td><td>Tamizaje positivo — aplicar PHQ-9</td></tr>
+    </tbody>
+</table>
+
+{% elif cod == 'PHQ-9' %}
+<table class="escala-tabla">
+    <thead><tr><th>Puntaje</th><th>Nivel</th><th>Acción sugerida</th></tr></thead>
+    <tbody>
+        <tr class="r-bajo"><td>0 – 4</td><td>Mínimo o Ninguno</td><td>Sin acción requerida</td></tr>
+        <tr class="r-info"><td>5 – 9</td><td>Leve</td><td>Vigilancia y apoyo</td></tr>
+        <tr class="r-warning"><td>10 – 14</td><td>Moderado</td><td>Plan de tratamiento</td></tr>
+        <tr class="r-orange"><td>15 – 19</td><td>Moderadamente Severo</td><td>Tratamiento activo e inmediato</td></tr>
+        <tr class="r-danger"><td>20 – 27</td><td>Severo</td><td>Derivación a especialista</td></tr>
+    </tbody>
+</table>
+<p style="font-size:7.5pt; color:#555; margin-top:4px;">P9 (ideación suicida): cualquier respuesta &ge; 1 requiere evaluación de riesgo inmediata.</p>
+
+{% elif cod == 'AUDIT' %}
+<table class="escala-tabla">
+    <thead><tr><th>Zona</th><th>Puntaje</th><th>Nivel</th><th>Intervención</th></tr></thead>
+    <tbody>
+        <tr class="r-bajo"><td>I</td><td>0 – 7</td><td>Consumo de Bajo Riesgo</td><td>Educación sobre alcohol</td></tr>
+        <tr class="r-info"><td>II</td><td>8 – 15</td><td>Consumo de Riesgo</td><td>Consejo simple</td></tr>
+        <tr class="r-warning"><td>III</td><td>16 – 19</td><td>Consumo Perjudicial</td><td>Consejo simple + seguimiento</td></tr>
+        <tr class="r-danger"><td>IV</td><td>20 – 40</td><td>Posible Dependencia</td><td>Derivación a especialista</td></tr>
+    </tbody>
+</table>
+
+{% elif cod == 'ASSIST' %}
+<table class="escala-tabla" style="width:48%; display:inline-table; margin-right:2%;">
+    <thead><tr><th colspan="3">Tabaco y otras sustancias (SSIS)</th></tr>
+            <tr><th>SSIS</th><th>Riesgo</th><th>Intervención</th></tr></thead>
+    <tbody>
+        <tr class="r-bajo"><td>0 – 3</td><td>Bajo</td><td>Sin intervención</td></tr>
+        <tr class="r-warning"><td>4 – 26</td><td>Moderado</td><td>Intervención breve</td></tr>
+        <tr class="r-danger"><td>27+</td><td>Alto</td><td>Tratamiento especializado</td></tr>
+    </tbody>
+</table>
+<table class="escala-tabla" style="width:48%; display:inline-table;">
+    <thead><tr><th colspan="3">Alcohol (SSIS)</th></tr>
+            <tr><th>SSIS</th><th>Riesgo</th><th>Intervención</th></tr></thead>
+    <tbody>
+        <tr class="r-bajo"><td>0 – 10</td><td>Bajo</td><td>Sin intervención</td></tr>
+        <tr class="r-warning"><td>11 – 26</td><td>Moderado</td><td>Intervención breve</td></tr>
+        <tr class="r-danger"><td>27+</td><td>Alto</td><td>Tratamiento especializado</td></tr>
+    </tbody>
+</table>
+<p style="font-size:7.5pt; color:#555; margin-top:4px;">Q8 (uso inyectado): cualquier respuesta positiva requiere derivación inmediata.</p>
+
+{% elif cod == 'ADNM-8' %}
+<table class="escala-tabla">
+    <thead><tr><th>Puntaje</th><th>Clasificación</th></tr></thead>
+    <tbody>
+        <tr class="r-bajo"><td>0 – 7</td><td>Sin indicador significativo de trastorno adaptativo</td></tr>
+        <tr class="r-danger"><td>&ge; 8</td><td>Indicador positivo — completar ADNM-20 y evaluación clínica</td></tr>
+    </tbody>
+</table>
+
+{% elif cod in ('IDARE', 'IDERE') %}
+<table class="escala-tabla">
+    <thead><tr><th>Percentil</th><th>Nivel de Ansiedad</th></tr></thead>
+    <tbody>
+        <tr class="r-bajo"><td>P &lt; 25</td><td>Ansiedad baja</td></tr>
+        <tr class="r-warning"><td>P 25–75</td><td>Ansiedad media</td></tr>
+        <tr class="r-danger"><td>P &gt; 75</td><td>Ansiedad alta — valoración especializada</td></tr>
+    </tbody>
+</table>
+<p style="font-size:7.5pt; color:#555; margin-top:4px;">La interpretación por percentiles requiere comparación con baremos normativos de la población de referencia.</p>
+
+{% else %}
+<p style="font-size:8.5pt;">Consulte el manual del instrumento para la interpretación de los puntajes.</p>
+{% endif %}
+
+<!-- PIE DE PÁGINA -->
+<div class="pie">
+    <table class="pie-tabla">
+        <tr>
+            <td>Mentis Cura — Sistema de Monitoreo Psicológico &nbsp;|&nbsp; Documento confidencial de uso exclusivo del area psicopedagogica</td>
+            <td style="text-align:right;">Evaluación #{{ evaluacion.id }} &nbsp;|&nbsp; {{ evaluacion.fecha_evaluacion.strftime('%d/%m/%Y') }}</td>
+        </tr>
+    </table>
+</div>
+
+</body>
+</html>

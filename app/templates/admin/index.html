@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block title %}Administración - Mentis Cura{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="bi bi-gear me-2"></i>Panel de Administración</h2>
+        <p class="text-muted">Gestión del sistema y resumen general.</p>
+    </div>
+</div>
+
+<!-- ── Tarjetas de estadísticas ───────────────────────────────── -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <i class="bi bi-people text-primary" style="font-size:2rem;"></i>
+                <h3 class="mt-2 mb-0">{{ total_usuarios }}</h3>
+                <p class="text-muted mb-0 small">Usuarios totales</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <i class="bi bi-person-badge text-success" style="font-size:2rem;"></i>
+                <h3 class="mt-2 mb-0">{{ total_orientadores }}</h3>
+                <p class="text-muted mb-0 small">Psicólogos</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <i class="bi bi-person-lines-fill text-info" style="font-size:2rem;"></i>
+                <h3 class="mt-2 mb-0">{{ total_discentes }}</h3>
+                <p class="text-muted mb-0 small">Discentes</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center h-100 border-danger {% if alertas_pendientes > 0 %}bg-danger bg-opacity-10{% endif %}">
+            <div class="card-body">
+                <i class="bi bi-bell-fill text-danger" style="font-size:2rem;"></i>
+                <h3 class="mt-2 mb-0 text-danger">{{ alertas_pendientes }}</h3>
+                <p class="text-muted mb-0 small">Alertas pendientes</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Gestión de usuarios ────────────────────────────────────── -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="bi bi-people me-2"></i>Gestión de Usuarios
+    </div>
+    <div class="card-body d-flex gap-2">
+        <a href="{{ url_for('admin.usuarios') }}" class="btn btn-primary">
+            <i class="bi bi-list-ul me-1"></i>Ver Usuarios
+        </a>
+        <a href="{{ url_for('admin.nuevo_usuario') }}" class="btn btn-outline-primary">
+            <i class="bi bi-person-plus me-1"></i>Nuevo Usuario
+        </a>
+    </div>
+</div>
+
+<!-- ── Monitoreo de alertas y psicólogos ──────────────────────── -->
+<h5 class="mb-3"><i class="bi bi-activity me-2"></i>Monitoreo de Alertas y Psicólogos</h5>
+
+<!-- Tarjetas de resumen de alertas -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card text-center h-100 border-secondary">
+            <div class="card-body">
+                <i class="bi bi-bell text-secondary" style="font-size:2rem;"></i>
+                <h3 class="mt-2 mb-0">{{ total_alertas }}</h3>
+                <p class="text-muted mb-0 small">Total de alertas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center h-100 border-danger">
+            <div class="card-body">
+                <i class="bi bi-bell-fill text-danger" style="font-size:2rem;"></i>
+                <h3 class="mt-2 mb-0 text-danger">{{ alertas_pendientes }}</h3>
+                <p class="text-muted mb-0 small">Pendientes</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center h-100 border-warning">
+            <div class="card-body">
+                <i class="bi bi-hourglass-split text-warning" style="font-size:2rem;"></i>
+                <h3 class="mt-2 mb-0 text-warning">{{ alertas_en_revision }}</h3>
+                <p class="text-muted mb-0 small">En revisión</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center h-100 border-success">
+            <div class="card-body">
+                <i class="bi bi-check-circle-fill text-success" style="font-size:2rem;"></i>
+                <h3 class="mt-2 mb-0 text-success">{{ alertas_atendidas }}</h3>
+                <p class="text-muted mb-0 small">Atendidas / Concluidas</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+
+    <!-- Tabla de alertas -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span><i class="bi bi-list-check me-2"></i>Detalle de Alertas</span>
+                <div class="btn-group btn-group-sm" role="group">
+                    <a href="{{ url_for('admin.index') }}"
+                       class="btn {% if not estado_filtro %}btn-secondary{% else %}btn-outline-secondary{% endif %}">
+                        Todas
+                    </a>
+                    <a href="{{ url_for('admin.index', estado='pendiente') }}"
+                       class="btn {% if estado_filtro == 'pendiente' %}btn-danger{% else %}btn-outline-danger{% endif %}">
+                        Pendientes
+                    </a>
+                    <a href="{{ url_for('admin.index', estado='en_revision') }}"
+                       class="btn {% if estado_filtro == 'en_revision' %}btn-warning{% else %}btn-outline-warning{% endif %}">
+                        En revisión
+                    </a>
+                    <a href="{{ url_for('admin.index', estado='atendida') }}"
+                       class="btn {% if estado_filtro == 'atendida' %}btn-success{% else %}btn-outline-success{% endif %}">
+                        Atendidas
+                    </a>
+                </div>
+            </div>
+
+            {% if alertas %}
+            <div class="table-responsive">
+                <table class="table table-hover table-sm mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Discente</th>
+                            <th>Prioridad</th>
+                            <th>Estado</th>
+                            <th>Atendida por</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for alerta in alertas %}
+                        <tr>
+                            <td class="text-muted small">{{ alerta.id }}</td>
+                            <td>
+                                <div class="fw-semibold small">{{ alerta.usuario.nombre_completo() }}</div>
+                                <div class="text-muted" style="font-size:.75rem;">
+                                    {{ alerta.usuario.matricula or '—' }}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ alerta.color_prioridad() }}">
+                                    <i class="bi {{ alerta.icono_prioridad() }} me-1"></i>
+                                    {{ alerta.prioridad | capitalize }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if alerta.estado == 'pendiente' %}
+                                <span class="badge bg-danger">Pendiente</span>
+                                {% elif alerta.estado == 'en_revision' %}
+                                <span class="badge bg-warning text-dark">En revisión</span>
+                                {% else %}
+                                <span class="badge bg-success">Atendida</span>
+                                {% endif %}
+                            </td>
+                            <td class="small">
+                                {% if alerta.atendida_por %}
+                                    {{ alerta.atendida_por.nombre_completo() }}
+                                    {% if alerta.fecha_atencion %}
+                                    <div class="text-muted" style="font-size:.72rem;">
+                                        {{ alerta.fecha_atencion.strftime('%d/%m/%Y') }}
+                                    </div>
+                                    {% endif %}
+                                {% else %}
+                                <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td class="small text-muted">
+                                {{ alerta.created_at.strftime('%d/%m/%Y') }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="card-body text-center text-muted py-5">
+                <i class="bi bi-bell-slash" style="font-size:2.5rem; opacity:.3;"></i>
+                <p class="mt-2 mb-0">No hay alertas con el filtro seleccionado.</p>
+            </div>
+            {% endif %}
+
+            <div class="card-footer bg-white">
+                <small class="text-muted">
+                    Mostrando {{ alertas|length }} alerta{{ 's' if alertas|length != 1 }}.
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard de psicólogos -->
+    <div class="col-lg-4">
+        <div class="card text-center border-primary mb-3">
+            <div class="card-body py-3">
+                <i class="bi bi-person-badge text-primary" style="font-size:2rem;"></i>
+                <h3 class="mt-1 mb-0 text-primary">{{ total_orientadores }}</h3>
+                <p class="text-muted mb-0 small">Psicólogo{{ 's' if total_orientadores != 1 }} en el sistema</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-person-lines-fill me-2"></i>Actividad por Psicólogo
+            </div>
+            {% if psicologos_stats %}
+            <div class="list-group list-group-flush">
+                {% for stat in psicologos_stats %}
+                <div class="list-group-item px-3 py-3">
+                    <div class="fw-semibold mb-2">
+                        <i class="bi bi-person-circle me-1 text-primary"></i>
+                        {{ stat.orientador.nombre_completo() }}
+                    </div>
+                    <div class="row g-2 text-center">
+                        <div class="col-4">
+                            <div class="bg-success bg-opacity-10 rounded py-2">
+                                <div class="fw-bold text-success">{{ stat.total_atendidas }}</div>
+                                <div style="font-size:.7rem;" class="text-muted">Atendidas</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="bg-warning bg-opacity-10 rounded py-2">
+                                <div class="fw-bold text-warning">{{ stat.en_revision }}</div>
+                                <div style="font-size:.7rem;" class="text-muted">En revisión</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="bg-primary bg-opacity-10 rounded py-2">
+                                <div class="fw-bold text-primary">{{ stat.discentes_atendidos }}</div>
+                                <div style="font-size:.7rem;" class="text-muted">Discentes</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="card-body text-center text-muted py-4">
+                <i class="bi bi-person-x" style="font-size:2rem; opacity:.3;"></i>
+                <p class="mt-2 mb-0 small">No hay psicólogos registrados.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

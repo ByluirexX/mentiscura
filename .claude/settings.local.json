@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(ls:*)",
+      "Bash(pip3 list:*)",
+      "Bash(conda info:*)",
+      "Bash(/Users/luiskinomoto/psico_monitor/venv/bin/python3:*)",
+      "Bash(python:*)",
+      "Bash(source:*)",
+      "Bash(psql:*)",
+      "Bash(/Library/PostgreSQL/18/bin/psql:*)",
+      "Bash(PGPASSWORD=psico123 /Library/PostgreSQL/18/bin/psql:*)",
+      "Bash(wc -l /Users/luiskinomoto/psico_monitor/app/routes/*.py /Users/luiskinomoto/psico_monitor/app/services/*.py)",
+      "Bash(grep -h \"from app.models\" /Users/luiskinomoto/psico_monitor/app/routes/*.py /Users/luiskinomoto/psico_monitor/app/services/*.py | sort | uniq)",
+      "Bash(grep -r \"@.*_bp.route\" /Users/luiskinomoto/psico_monitor/app/routes/*.py | grep -E \"post|put|delete|patch\" | head -20)",
+      "Bash(grep -E \"route.*methods.*POST|route.*methods.*DELETE\" /Users/luiskinomoto/psico_monitor/app/routes/*.py)",
+      "Bash(grep -E \"methods=\\\\['\\(POST|DELETE\\)'\" /Users/luiskinomoto/psico_monitor/app/routes/*.py)"
+    ]
+  }
+}

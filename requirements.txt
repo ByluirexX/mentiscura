@@ -1,0 +1,22 @@
+# Framework web
+Flask==3.0.0
+Flask-SQLAlchemy==3.1.1
+Flask-Login==0.6.3
+Flask-WTF==1.2.1
+
+# Base de datos
+SQLAlchemy==2.0.23
+
+# Seguridad
+Werkzeug==3.0.1
+email-validator==2.1.0
+
+# Utilidades
+python-dotenv==1.0.0
+
+# Exportacion de reportes a PDF
+xhtml2pdf==0.2.11
+
+# Servidor de produccion
+gunicorn==21.2.0
+psycopg2-binary==2.9.9

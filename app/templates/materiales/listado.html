@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Material de Apoyo - Mentis Cura{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2>
+            <i class="bi bi-folder2-open me-2"></i>
+            Material de Apoyo Psicológico
+        </h2>
+        <p class="text-muted">
+            Documentos y recursos disponibles para consulta.
+        </p>
+    </div>
+    {% if current_user.puede_ver_alertas() %}
+    <div class="col-auto d-flex align-items-center">
+        <a href="{{ url_for('materiales.subir') }}" class="btn btn-primary">
+            <i class="bi bi-upload me-2"></i>
+            Subir Material
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{% if materiales %}
+
+<!-- Filtro visual por tipo -->
+<div class="row mb-3">
+    <div class="col">
+        <span class="badge bg-secondary me-2">
+            Total: {{ materiales | length }}
+        </span>
+        <span class="badge bg-danger me-2">
+            <i class="bi bi-file-pdf me-1"></i>
+            PDF: {{ materiales | selectattr('tipo_archivo', 'equalto', 'pdf') | list | length }}
+        </span>
+        <span class="badge bg-info me-2">
+            <i class="bi bi-image me-1"></i>
+            Imágenes: {{ materiales | selectattr('tipo_archivo', 'equalto', 'imagen') | list | length }}
+        </span>
+    </div>
+</div>
+
+<div class="row g-4">
+    {% for material in materiales %}
+    <div class="col-sm-6 col-lg-4 col-xl-3">
+        <div class="card h-100">
+
+            <!-- Vista previa -->
+            {% if material.es_imagen() %}
+            <div style="height: 160px; overflow: hidden; background-color: #f0f0f0;">
+                <img
+                    src="{{ url_for('materiales.archivo', material_id=material.id) }}"
+                    alt="{{ material.titulo }}"
+                    style="width: 100%; height: 100%; object-fit: cover;"
+                >
+            </div>
+            {% else %}
+            <div class="d-flex align-items-center justify-content-center"
+                 style="height: 160px; background-color: #fff5f5;">
+                <i class="bi bi-file-earmark-pdf text-danger" style="font-size: 4rem;"></i>
+            </div>
+            {% endif %}
+
+            <div class="card-body d-flex flex-column">
+                <!-- Tipo badge -->
+                <div class="mb-2">
+                    {% if material.es_pdf() %}
+                    <span class="badge bg-danger">
+                        <i class="bi bi-file-pdf me-1"></i>PDF
+                    </span>
+                    {% else %}
+                    <span class="badge bg-info">
+                        <i class="bi bi-image me-1"></i>Imagen
+                    </span>
+                    {% endif %}
+                </div>
+
+                <!-- Titulo y descripcion -->
+                <h6 class="card-title mb-1">{{ material.titulo }}</h6>
+                {% if material.descripcion %}
+                <p class="card-text text-muted small flex-grow-1">
+                    {{ material.descripcion | truncate(100) }}
+                </p>
+                {% else %}
+                <p class="flex-grow-1"></p>
+                {% endif %}
+
+                <!-- Metadatos -->
+                <p class="card-text mb-2">
+                    <small class="text-muted">
+                        <i class="bi bi-person me-1"></i>
+                        {{ material.subido_por.nombre }} {{ material.subido_por.apellido_paterno }}
+                        <br>
+                        <i class="bi bi-calendar me-1"></i>
+                        {{ material.created_at.strftime('%d/%m/%Y') }}
+                    </small>
+                </p>
+
+                <!-- Acciones -->
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('materiales.archivo', material_id=material.id) }}"
+                       target="_blank"
+                       class="btn btn-outline-primary btn-sm flex-grow-1">
+                        <i class="bi bi-eye me-1"></i>Ver
+                    </a>
+                    {% if current_user.puede_ver_alertas() %}
+                    <form method="POST"
+                          action="{{ url_for('materiales.eliminar', material_id=material.id) }}"
+                          onsubmit="return confirm('¿Eliminar este material?')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-folder2-open" style="font-size: 3rem;"></i>
+    <p class="mt-3">No hay materiales disponibles aún.</p>
+    {% if current_user.puede_ver_alertas() %}
+    <a href="{{ url_for('materiales.subir') }}" class="btn btn-primary">
+        <i class="bi bi-upload me-2"></i>Subir el primer material
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

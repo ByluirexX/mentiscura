@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+
+{% block title %}ASSIST - Mentis Cura{% endblock %}
+
+{% block extra_css %}
+<style>
+    .sustancia-section {
+        display: none;
+        animation: fadeIn 0.3s ease-in;
+    }
+    .sustancia-section.visible {
+        display: block;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .sustancia-header {
+        background: linear-gradient(135deg, var(--primary-color), #3a6db5);
+        color: white;
+    }
+    .q1-card {
+        transition: all 0.2s;
+        border-left: 3px solid transparent;
+    }
+    .q1-card.selected-yes {
+        border-left-color: #d69e2e;
+        background-color: #fffff0;
+    }
+    .q1-card.selected-no {
+        border-left-color: #38a169;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('cuestionarios.listado') }}">Cuestionarios</a></li>
+                <li class="breadcrumb-item active">ASSIST</li>
+            </ol>
+        </nav>
+
+        <h2>
+            <span class="badge bg-primary me-2">ASSIST</span>
+            {{ cuestionario.nombre }}
+        </h2>
+    </div>
+</div>
+
+<!-- Instrucciones -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-light border-0">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-info-circle me-2"></i>Instrucciones
+                </h5>
+                <p class="card-text mb-0">
+                    {{ cuestionario.instrucciones or 'Las siguientes preguntas se refieren a su experiencia con el consumo de alcohol, tabaco y otras sustancias a lo largo de su vida y en los últimos tres meses. Responda con honestidad; sus respuestas son confidenciales.' }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form method="POST" action="{{ url_for('cuestionarios.enviar', codigo='ASSIST') }}" id="formAssist">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <!-- ================================================================= -->
+    <!-- SECCION Q1: Uso alguna vez en la vida                             -->
+    <!-- ================================================================= -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-1-circle me-2"></i>
+                En su vida, ¿cuál de las siguientes sustancias ha consumido alguna vez?
+            </h5>
+        </div>
+        <div class="card-body">
+            <p class="text-muted mb-3">Seleccione "Sí" o "No" para cada sustancia.</p>
+            <div class="row">
+                {% for pregunta in preguntas_q1 %}
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card q1-card h-100" id="q1-card-{{ pregunta.sustancia }}">
+                        <div class="card-body py-2 px-3">
+                            <h6 class="card-title mb-1">
+                                {{ sustancias_info[pregunta.sustancia].nombre }}
+                            </h6>
+                            <small class="text-muted d-block mb-2">
+                                {{ sustancias_info[pregunta.sustancia].ejemplos }}
+                            </small>
+                            <div class="d-flex gap-3">
+                                <div class="form-check">
+                                    <input class="form-check-input q1-radio" type="radio"
+                                           name="pregunta_{{ pregunta.id }}"
+                                           id="pregunta_{{ pregunta.id }}_0"
+                                           value="0"
+                                           data-sustancia="{{ pregunta.sustancia }}"
+                                           data-respuesta="no">
+                                    <label class="form-check-label" for="pregunta_{{ pregunta.id }}_0">
+                                        No
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input q1-radio" type="radio"
+                                           name="pregunta_{{ pregunta.id }}"
+                                           id="pregunta_{{ pregunta.id }}_1"
+                                           value="1"
+                                           data-sustancia="{{ pregunta.sustancia }}"
+                                           data-respuesta="si">
+                                    <label class="form-check-label" for="pregunta_{{ pregunta.id }}_1">
+                                        Sí
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- SECCIONES Q2-Q7 POR SUSTANCIA (ocultas por defecto)               -->
+    <!-- ================================================================= -->
+    {% for sustancia in sustancias %}
+    <div class="card mb-4 sustancia-section" id="seccion-{{ sustancia }}">
+        <div class="card-header sustancia-header">
+            <h5 class="mb-0">
+                <i class="bi bi-clipboard-pulse me-2"></i>
+                {{ sustancias_info[sustancia].nombre }} - Preguntas detalladas
+            </h5>
+        </div>
+        <div class="card-body">
+            {% for pregunta in preguntas_por_sustancia[sustancia] %}
+            <div class="mb-4 {% if not loop.last %}pb-3 border-bottom{% endif %}">
+                <h6 class="mb-3">
+                    <span class="badge bg-secondary me-2">{{ pregunta.grupo_pregunta }}</span>
+                    {{ pregunta.texto }}
+                </h6>
+                <div class="opciones">
+                    {% for opcion in pregunta.obtener_opciones_ordenadas() %}
+                    <div class="form-check opcion-respuesta p-2 border rounded mb-2">
+                        <input class="form-check-input assist-radio" type="radio"
+                               name="pregunta_{{ pregunta.id }}"
+                               id="pregunta_{{ pregunta.id }}_{{ opcion.valor }}"
+                               value="{{ opcion.valor }}"
+                               data-sustancia="{{ sustancia }}">
+                        <label class="form-check-label w-100"
+                               for="pregunta_{{ pregunta.id }}_{{ opcion.valor }}">
+                            {{ opcion.texto }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- ================================================================= -->
+    <!-- SECCION Q8: Uso por via inyectada                                 -->
+    <!-- ================================================================= -->
+    {% if pregunta_q8 %}
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                {{ pregunta_q8.texto }}
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="opciones">
+                {% for opcion in pregunta_q8.obtener_opciones_ordenadas() %}
+                <div class="form-check opcion-respuesta p-3 border rounded mb-2">
+                    <input class="form-check-input assist-radio" type="radio"
+                           name="pregunta_{{ pregunta_q8.id }}"
+                           id="pregunta_{{ pregunta_q8.id }}_{{ opcion.valor }}"
+                           value="{{ opcion.valor }}"
+                           data-sustancia="q8">
+                    <label class="form-check-label w-100"
+                           for="pregunta_{{ pregunta_q8.id }}_{{ opcion.valor }}">
+                        {{ opcion.texto }}
+                    </label>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Botones de accion -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted" id="contadorRespuestas">
+                            0 de 0 preguntas respondidas
+                        </span>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('cuestionarios.listado') }}" class="btn btn-outline-secondary me-2">
+                            <i class="bi bi-x-circle me-1"></i>
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg" id="btnEnviar" disabled>
+                            <i class="bi bi-send me-1"></i>
+                            Enviar Respuestas
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('formAssist');
+    const btnEnviar = document.getElementById('btnEnviar');
+    const contador = document.getElementById('contadorRespuestas');
+    const sustancias = {{ sustancias | tojson }};
+
+    // Estado: que sustancias tienen Q1=Si
+    const sustanciasActivas = new Set();
+
+    // Escuchar cambios en Q1
+    document.querySelectorAll('.q1-radio').forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            const sustancia = this.dataset.sustancia;
+            const respuesta = this.dataset.respuesta;
+            const seccion = document.getElementById('seccion-' + sustancia);
+            const card = document.getElementById('q1-card-' + sustancia);
+
+            if (respuesta === 'si') {
+                sustanciasActivas.add(sustancia);
+                if (seccion) {
+                    seccion.classList.add('visible');
+                }
+                card.classList.remove('selected-no');
+                card.classList.add('selected-yes');
+            } else {
+                sustanciasActivas.delete(sustancia);
+                if (seccion) {
+                    seccion.classList.remove('visible');
+                    // Limpiar respuestas de esta sustancia
+                    seccion.querySelectorAll('input[type="radio"]:checked').forEach(function(r) {
+                        r.checked = false;
+                    });
+                }
+                card.classList.remove('selected-yes');
+                card.classList.add('selected-no');
+            }
+            actualizarContador();
+        });
+    });
+
+    // Escuchar cambios en todas las radios
+    document.querySelectorAll('.assist-radio').forEach(function(radio) {
+        radio.addEventListener('change', actualizarContador);
+    });
+
+    function actualizarContador() {
+        // Calcular preguntas requeridas
+        // Q1: 9 siempre
+        let requeridas = {{ preguntas_q1|length }};
+        // Q2-Q7: 6 por sustancia activa
+        requeridas += sustanciasActivas.size * 6;
+        // Q8: 1 siempre
+        requeridas += 1;
+
+        // Contar respondidas
+        let respondidas = 0;
+        // Q1 respondidas
+        document.querySelectorAll('.q1-radio:checked').forEach(function() { respondidas++; });
+        // Q2-Q7 respondidas (solo de sustancias activas)
+        sustanciasActivas.forEach(function(s) {
+            const seccion = document.getElementById('seccion-' + s);
+            if (seccion) {
+                respondidas += seccion.querySelectorAll('input[type="radio"]:checked').length;
+            }
+        });
+        // Q8 respondida
+        {% if pregunta_q8 %}
+        if (document.querySelector('input[name="pregunta_{{ pregunta_q8.id }}"]:checked')) {
+            respondidas++;
+        }
+        {% endif %}
+
+        contador.textContent = respondidas + ' de ' + requeridas + ' preguntas respondidas';
+
+        if (respondidas >= requeridas && requeridas > 0) {
+            btnEnviar.disabled = false;
+            btnEnviar.classList.remove('btn-secondary');
+            btnEnviar.classList.add('btn-primary');
+        } else {
+            btnEnviar.disabled = true;
+        }
+    }
+
+    // Confirmacion antes de enviar
+    form.addEventListener('submit', function(e) {
+        if (!confirm('¿Está seguro de enviar sus respuestas? Esta acción no se puede deshacer.')) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

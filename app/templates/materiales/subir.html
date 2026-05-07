@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Subir Material - Mentis Cura{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2>
+            <i class="bi bi-upload me-2"></i>
+            Subir Material de Apoyo
+        </h2>
+        <p class="text-muted">
+            Sube documentos PDF o imágenes para compartir con los discentes.
+        </p>
+    </div>
+    <div class="col-auto d-flex align-items-center">
+        <a href="{{ url_for('materiales.listado') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Volver
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-file-earmark-arrow-up me-2"></i>
+                Nuevo Material
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Título <span class="text-danger">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            name="titulo"
+                            class="form-control"
+                            placeholder="Ej: Técnicas de manejo del estrés"
+                            maxlength="200"
+                            required
+                        >
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Descripción
+                            <span class="text-muted fw-normal">(opcional)</span>
+                        </label>
+                        <textarea
+                            name="descripcion"
+                            class="form-control"
+                            rows="3"
+                            placeholder="Breve descripción del contenido del material..."
+                        ></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">
+                            Archivo <span class="text-danger">*</span>
+                        </label>
+                        <input
+                            type="file"
+                            name="archivo"
+                            class="form-control"
+                            accept=".pdf,.jpg,.jpeg,.png,.gif,.webp"
+                            required
+                            id="inputArchivo"
+                            onchange="mostrarVistaPrevia(this)"
+                        >
+                        <div class="form-text">
+                            Formatos permitidos: PDF, JPG, JPEG, PNG, GIF, WEBP.
+                            Tamaño máximo: 16 MB.
+                        </div>
+
+                        <!-- Vista previa para imágenes -->
+                        <div id="vistaPrevia" class="mt-2" style="display:none;">
+                            <img id="imgPrevia" src="" alt="Vista previa"
+                                 style="max-width: 100%; max-height: 200px; border-radius: 6px; border: 1px solid #dee2e6;">
+                        </div>
+
+                        <!-- Indicador para PDF -->
+                        <div id="indicadorPdf" class="mt-2 text-danger" style="display:none;">
+                            <i class="bi bi-file-earmark-pdf me-1"></i>
+                            <span id="nombrePdf"></span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-cloud-upload me-2"></i>
+                        Subir Material
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function mostrarVistaPrevia(input) {
+    const vistaPrevia = document.getElementById('vistaPrevia');
+    const indicadorPdf = document.getElementById('indicadorPdf');
+    const imgPrevia = document.getElementById('imgPrevia');
+    const nombrePdf = document.getElementById('nombrePdf');
+
+    vistaPrevia.style.display = 'none';
+    indicadorPdf.style.display = 'none';
+
+    if (!input.files || !input.files[0]) return;
+
+    const archivo = input.files[0];
+    const extension = archivo.name.split('.').pop().toLowerCase();
+    const imagenesExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+    if (imagenesExt.includes(extension)) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            imgPrevia.src = e.target.result;
+            vistaPrevia.style.display = 'block';
+        };
+        reader.readAsDataURL(archivo);
+    } else if (extension === 'pdf') {
+        nombrePdf.textContent = archivo.name;
+        indicadorPdf.style.display = 'block';
+    }
+}
+</script>
+{% endblock %}

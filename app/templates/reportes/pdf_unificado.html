@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <style>
+        /* ===== PAGINA ===== */
+        @page {
+            size: letter;
+            margin: 1.8cm 1.5cm 2cm 1.5cm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            color: #000000;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ===== ENCABEZADO INSTITUCIONAL ===== */
+        .enc-ejercito {
+            text-align: center;
+            font-size: 13pt;
+            font-weight: bold;
+            letter-spacing: 3px;
+            margin-bottom: 5px;
+        }
+
+        .enc-secciones {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2px;
+        }
+
+        .enc-izquierda {
+            font-size: 9pt;
+            font-weight: bold;
+            text-align: left;
+        }
+
+        .enc-derecha {
+            font-size: 9pt;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .linea-doble {
+            border-top: 3px double #000000;
+            margin: 6px 0;
+            clear: both;
+        }
+
+        .linea-simple {
+            border-top: 1px solid #000000;
+            margin: 6px 0;
+            clear: both;
+        }
+
+        /* ===== TITULO DEL REPORTE ===== */
+        .titulo-reporte {
+            text-align: center;
+            font-size: 12pt;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin: 8px 0 4px 0;
+        }
+
+        .info-periodo {
+            text-align: center;
+            font-size: 8.5pt;
+            color: #333333;
+            margin-bottom: 4px;
+        }
+
+        /* ===== TITULOS DE SECCION ===== */
+        .seccion-titulo {
+            font-size: 10pt;
+            font-weight: bold;
+            background-color: #cccccc;
+            padding: 4px 8px;
+            margin-top: 14px;
+            margin-bottom: 6px;
+            clear: both;
+        }
+
+        /* ===== LISTA DE CUESTIONARIOS ===== */
+        .cuestionarios-tabla {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9pt;
+            margin-bottom: 6px;
+        }
+
+        .cuestionarios-tabla th {
+            background-color: #e8e8e8;
+            font-weight: bold;
+            padding: 4px 8px;
+            border: 1px solid #aaaaaa;
+            text-align: left;
+        }
+
+        .cuestionarios-tabla td {
+            padding: 3px 8px;
+            border: 1px solid #cccccc;
+        }
+
+        /* ===== BLOQUE DE DISCENTE ===== */
+        .discente-bloque {
+            border: 1px solid #999999;
+            margin-bottom: 10px;
+            padding: 6px 8px;
+            page-break-inside: avoid;
+        }
+
+        .discente-encabezado {
+            overflow: hidden;
+            margin-bottom: 3px;
+        }
+
+        .discente-nombre {
+            float: left;
+            font-weight: bold;
+            font-size: 10.5pt;
+        }
+
+        .discente-atencion {
+            float: right;
+            font-size: 9pt;
+            font-weight: bold;
+        }
+
+        .atencion-si {
+            color: #cc0000;
+        }
+
+        .atencion-no {
+            color: #006600;
+        }
+
+        .discente-datos {
+            font-size: 8.5pt;
+            color: #444444;
+            margin-bottom: 6px;
+            clear: both;
+        }
+
+        .discente-datos strong {
+            color: #000000;
+        }
+
+        /* ===== TABLAS GENERALES ===== */
+        table.datos {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 8.5pt;
+        }
+
+        table.datos th {
+            background-color: #e0e0e0;
+            font-weight: bold;
+            padding: 3px 5px;
+            border: 1px solid #aaaaaa;
+            text-align: left;
+        }
+
+        table.datos td {
+            padding: 3px 5px;
+            border: 1px solid #cccccc;
+            vertical-align: top;
+        }
+
+        table.datos tr.fila-par {
+            background-color: #f8f8f8;
+        }
+
+        /* ===== INDICADORES DE ATENCION EN TABLA ===== */
+        .si-atencion {
+            color: #cc0000;
+            font-weight: bold;
+        }
+
+        .no-atencion {
+            color: #006600;
+        }
+
+        /* ===== FILAS DE ALERTAS POR PRIORIDAD ===== */
+        tr.prioridad-critica td {
+            background-color: #ffe0e0;
+        }
+
+        tr.prioridad-alta td {
+            background-color: #fff0e0;
+        }
+
+        tr.prioridad-media td {
+            background-color: #fdfce0;
+        }
+
+        tr.prioridad-baja td {
+            background-color: #e8f4e8;
+        }
+
+        /* ===== SIN DATOS ===== */
+        .sin-datos {
+            color: #888888;
+            font-style: italic;
+            text-align: center;
+            padding: 10px;
+            font-size: 9pt;
+        }
+
+        /* ===== PIE DE PAGINA ===== */
+        .pie-pagina {
+            text-align: center;
+            font-size: 7.5pt;
+            color: #666666;
+            border-top: 1px solid #cccccc;
+            padding-top: 5px;
+            margin-top: 18px;
+        }
+
+        /* ===== SALTO DE PAGINA ===== */
+        .salto-pagina {
+            page-break-before: always;
+        }
+
+        /* ===== MARCA DE AGUA ===== */
+        .pdf-watermark {
+            position: fixed;
+            top: 220px;
+            left: 70px;
+            width: 420px;
+            opacity: 0.055;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Marca de agua Mentis Cura -->
+    <img class="pdf-watermark" src="/static/images/logo_mentis_cura.png" alt="">
+
+    <!-- ============================================================ -->
+    <!-- ENCABEZADO INSTITUCIONAL                                      -->
+    <!-- ============================================================ -->
+    <div class="enc-ejercito">EJÉRCITO MEXICANO</div>
+
+    <table class="enc-secciones">
+        <tr>
+            <td class="enc-izquierda">SECCIÓN PEDAGÓGICA</td>
+            <td class="enc-derecha">SUBSECCIÓN PSICOPEDAGÓGICA</td>
+        </tr>
+    </table>
+
+    <div class="linea-doble"></div>
+
+    <!-- ============================================================ -->
+    <!-- TITULO Y DATOS DEL PERIODO                                    -->
+    <!-- ============================================================ -->
+    <div class="titulo-reporte">MENTIS CURA &mdash; REPORTE DE MONITOREO PSICOLÓGICO</div>
+
+    <div class="info-periodo">
+        <strong>Fecha de generación:</strong>
+        {{ datos.periodo.fecha_generacion.strftime('%d/%m/%Y') }}
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+        <strong>Periodo:</strong>
+        {{ datos.periodo.fecha_desde.strftime('%d/%m/%Y') }}
+        al
+        {{ datos.periodo.fecha_hasta.strftime('%d/%m/%Y') }}
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+        <strong>Periodicidad:</strong>
+        {{ datos.periodo.etiqueta }}
+        {% if datos.periodo.anio_cursa %}
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+        <strong>Año que cursa:</strong>
+        {{ datos.periodo.anio_cursa }}°
+        {% endif %}
+    </div>
+
+    <div class="info-periodo">
+        <strong>Total de evaluaciones:</strong> {{ datos.total_evaluaciones }}
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+        <strong>Discentes evaluados:</strong> {{ datos.total_discentes }}
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+        <strong>Alertas generadas:</strong> {{ datos.total_alertas }}
+    </div>
+
+    <div class="linea-simple"></div>
+
+    <!-- ============================================================ -->
+    <!-- SECCION I: CUESTIONARIOS REALIZADOS EN EL PERIODO            -->
+    <!-- ============================================================ -->
+    <div class="seccion-titulo">I. CUESTIONARIOS REALIZADOS EN EL PERIODO</div>
+
+    {% if datos.cuestionarios_resumen %}
+    <table class="cuestionarios-tabla">
+        <tr>
+            <th>Código</th>
+            <th>Nombre del Cuestionario</th>
+            <th>Total de Evaluaciones</th>
+        </tr>
+        {% for item in datos.cuestionarios_resumen %}
+        <tr {% if loop.index is even %}style="background-color:#f8f8f8;"{% endif %}>
+            <td><strong>{{ item.cuestionario.codigo }}</strong></td>
+            <td>{{ item.cuestionario.nombre }}</td>
+            <td>{{ item.total_evaluaciones }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p class="sin-datos">No se realizaron evaluaciones en este periodo.</p>
+    {% endif %}
+
+    <!-- ============================================================ -->
+    <!-- SECCION II: EVALUACIONES POR DISCENTE                        -->
+    <!-- ============================================================ -->
+    <div class="seccion-titulo">II. EVALUACIONES POR DISCENTE</div>
+
+    {% if datos.discentes %}
+
+    {% for discente_data in datos.discentes %}
+    <div class="discente-bloque">
+
+        <!-- Nombre y semaforo de atencion -->
+        <div class="discente-encabezado">
+            <div class="discente-nombre">
+                {{ discente_data.usuario.apellido_paterno }}
+                {% if discente_data.usuario.apellido_materno %}{{ discente_data.usuario.apellido_materno }}{% endif %},
+                {{ discente_data.usuario.nombre }}
+            </div>
+            <div class="discente-atencion">
+                {% if discente_data.necesita_atencion %}
+                <span class="atencion-si">&#9888; REQUIERE ATENCIÓN PSICOLÓGICA</span>
+                {% else %}
+                <span class="atencion-no">&#10003; SIN INDICADORES DE RIESGO</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Datos académicos -->
+        <div class="discente-datos">
+            Matrícula: <strong>{{ discente_data.usuario.matricula or 'N/A' }}</strong>
+            &nbsp;|&nbsp;
+            Año que cursa: <strong>{{ discente_data.usuario.anio_cursa or 'N/A' }}°</strong>
+            &nbsp;|&nbsp;
+            Carrera: <strong>{{ discente_data.usuario.get_carrera_display() }}</strong>
+            &nbsp;|&nbsp;
+            Compañía: <strong>{{ discente_data.usuario.get_compania_display() }}</strong>
+        </div>
+
+        <!-- Cuestionarios realizados (resumen) -->
+        <table class="datos">
+            <tr>
+                <th>Cuestionario</th>
+                <th>Veces Realizado</th>
+                <th>¿Requiere Atención?</th>
+            </tr>
+            {% for grupo in discente_data.evaluaciones_por_cuestionario %}
+            {% set requiere = grupo.evaluaciones | selectattr('necesita_atencion') | list %}
+            <tr {% if loop.index is even %}class="fila-par"{% endif %}>
+                <td><strong>{{ grupo.cuestionario.codigo }}</strong></td>
+                <td>{{ grupo.evaluaciones | length }}</td>
+                <td>
+                    {% if requiere %}
+                    <span class="si-atencion">SÍ</span>
+                    {% else %}
+                    <span class="no-atencion">NO</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+    </div>
+    {% endfor %}
+
+    {% else %}
+    <p class="sin-datos">No se encontraron discentes con evaluaciones en este periodo.</p>
+    {% endif %}
+
+    <!-- ============================================================ -->
+    <!-- SECCION III: ALERTAS GENERADAS EN EL PERIODO                 -->
+    <!-- ============================================================ -->
+    <div class="salto-pagina"></div>
+
+    <!-- Repetir encabezado al inicio de la nueva pagina -->
+    <div class="enc-ejercito">EJÉRCITO MEXICANO</div>
+    <table class="enc-secciones">
+        <tr>
+            <td class="enc-izquierda">SECCIÓN PEDAGÓGICA</td>
+            <td class="enc-derecha">SUBSECCIÓN PSICOPEDAGÓGICA</td>
+        </tr>
+    </table>
+    <div class="linea-doble"></div>
+    <div class="titulo-reporte">MENTIS CURA &mdash; REPORTE DE MONITOREO PSICOLÓGICO</div>
+    <div class="linea-simple"></div>
+
+    <div class="seccion-titulo">
+        III. ALERTAS GENERADAS EN EL PERIODO
+        ({{ datos.total_alertas }} alerta{{ 's' if datos.total_alertas != 1 else '' }})
+    </div>
+
+    {% if datos.alertas %}
+    <table class="datos">
+        <tr>
+            <th>Discente</th>
+            <th>Matrícula</th>
+            <th>Tipo de Alerta</th>
+            <th>Prioridad</th>
+            <th>Estado</th>
+            <th>Atendida por</th>
+            <th>Nota de Atención</th>
+        </tr>
+        {% for alerta in datos.alertas %}
+        <tr class="prioridad-{{ alerta.prioridad }}">
+            <td>
+                {{ alerta.usuario.apellido_paterno }}
+                {% if alerta.usuario.apellido_materno %}{{ alerta.usuario.apellido_materno }}{% endif %},
+                {{ alerta.usuario.nombre }}
+            </td>
+            <td>{{ alerta.usuario.matricula or 'N/A' }}</td>
+            <td>
+                {% if alerta.tipo == 'pregunta_critica' %}
+                    Pregunta Crítica
+                {% else %}
+                    Puntaje de Riesgo
+                {% endif %}
+            </td>
+            <td><strong>{{ alerta.prioridad | upper }}</strong></td>
+            <td>
+                {% if alerta.estado == 'pendiente' %}
+                    Pendiente
+                {% elif alerta.estado == 'en_revision' %}
+                    En Revisión
+                {% else %}
+                    Atendida
+                {% endif %}
+            </td>
+            <td>
+                {% if alerta.atendida_por %}
+                    {{ alerta.atendida_por.nombre_completo() }}
+                {% else %}
+                    &mdash;
+                {% endif %}
+            </td>
+            <td>
+                {% if alerta.notas_atencion %}
+                    {{ alerta.notas_atencion }}
+                {% else %}
+                    &mdash;
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p class="sin-datos">No se generaron alertas en este periodo.</p>
+    {% endif %}
+
+    <!-- ============================================================ -->
+    <!-- PIE DE PAGINA                                                 -->
+    <!-- ============================================================ -->
+    <div class="pie-pagina">
+        Este reporte es un instrumento de tamizaje y monitoreo. No constituye diagnóstico clínico.
+        Información confidencial, para uso exclusivo del personal autorizado.
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+        MENTIS CURA &mdash; Sistema de Monitoreo Psicológico
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+        Generado: {{ datos.periodo.fecha_generacion.strftime('%d/%m/%Y') }}
+    </div>
+
+</body>
+</html>

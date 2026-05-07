@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Discentes - Mentis Cura{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2>
+            <i class="bi bi-people me-2"></i>
+            Listado de Discentes
+        </h2>
+        <p class="text-muted">Consulte el historial de evaluaciones de cada discente. Busque por matrícula o nombre.</p>
+    </div>
+</div>
+
+<!-- Buscador -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Buscar por Matrícula</label>
+                        <input type="text" class="form-control" id="buscarMatricula"
+                               placeholder="Ej: A12345">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Buscar por Nombre</label>
+                        <input type="text" class="form-control" id="buscarNombre"
+                               placeholder="Nombre o apellido...">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Filtrar por Compañía</label>
+                        <select class="form-select" id="filtrarCompania">
+                            <option value="">Todas</option>
+                            <option value="primera">Primera Cía.</option>
+                            <option value="segunda">Segunda Cía.</option>
+                            <option value="tercera">Tercera Cía.</option>
+                            <option value="cuarta">Cuarta Cía.</option>
+                            <option value="oficiales">Cía. Oficiales</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body p-0">
+                {% if discentes %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" id="tablaDiscentes">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Matrícula</th>
+                                <th>Nombre Completo</th>
+                                <th>Año</th>
+                                <th>Carrera</th>
+                                <th>Compañía</th>
+                                <th>Estado</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for discente in discentes %}
+                            <tr data-matricula="{{ discente.matricula or '' }}"
+                                data-nombre="{{ discente.nombre_completo()|lower }}"
+                                data-compania="{{ discente.compania or '' }}">
+                                <td>
+                                    <span class="badge bg-primary">{{ discente.matricula or discente.username }}</span>
+                                </td>
+                                <td>
+                                    <strong>{{ discente.nombre_completo() }}</strong>
+                                    {% if discente.edad %}
+                                    <br><small class="text-muted">{{ discente.edad }} años</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if discente.anio_cursa %}
+                                    {{ discente.anio_cursa }}° Año
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small>{{ discente.get_carrera_display() }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ discente.get_compania_display() }}</span>
+                                </td>
+                                <td>
+                                    {% if discente.activo %}
+                                    <span class="badge bg-success">Activo</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Inactivo</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('evaluaciones.historial_usuario', usuario_id=discente.id) }}"
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-clock-history me-1"></i>
+                                        Ver Historial
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card-footer text-muted small">
+                    Total: <strong id="totalMostrados">{{ discentes|length }}</strong> de {{ discentes|length }} discentes
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-people text-muted" style="font-size: 4rem;"></i>
+                    <h4 class="mt-3 text-muted">No hay discentes registrados</h4>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const buscarMatricula = document.getElementById('buscarMatricula');
+    const buscarNombre = document.getElementById('buscarNombre');
+    const filtrarCompania = document.getElementById('filtrarCompania');
+    const tabla = document.getElementById('tablaDiscentes');
+    const totalMostrados = document.getElementById('totalMostrados');
+
+    if (!tabla) return;
+
+    const filas = tabla.querySelectorAll('tbody tr');
+
+    function filtrar() {
+        const matricula = buscarMatricula.value.toUpperCase();
+        const nombre = buscarNombre.value.toLowerCase();
+        const compania = filtrarCompania.value;
+
+        let visibles = 0;
+
+        filas.forEach(function(fila) {
+            const filaMatricula = fila.getAttribute('data-matricula') || '';
+            const filaNombre = fila.getAttribute('data-nombre') || '';
+            const filaCompania = fila.getAttribute('data-compania') || '';
+
+            let mostrar = true;
+
+            if (matricula && !filaMatricula.includes(matricula)) {
+                mostrar = false;
+            }
+
+            if (nombre && !filaNombre.includes(nombre)) {
+                mostrar = false;
+            }
+
+            if (compania && filaCompania !== compania) {
+                mostrar = false;
+            }
+
+            fila.style.display = mostrar ? '' : 'none';
+
+            if (mostrar) visibles++;
+        });
+
+        if (totalMostrados) {
+            totalMostrados.textContent = visibles;
+        }
+    }
+
+    buscarMatricula.addEventListener('input', filtrar);
+    buscarNombre.addEventListener('input', filtrar);
+    filtrarCompania.addEventListener('change', filtrar);
+});
+</script>
+{% endblock %}

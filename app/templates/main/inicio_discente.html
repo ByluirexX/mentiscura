@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio - Mentis Cura{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="bi bi-house me-2"></i>
+            Bienvenido, {{ current_user.nombre }}
+        </h2>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <!-- Estadísticas del usuario -->
+    <div class="col-md-3 mb-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-clipboard-check text-primary" style="font-size: 2rem;"></i>
+                <h3 class="mt-2 mb-0">{{ estadisticas.total_evaluaciones }}</h3>
+                <p class="text-muted mb-0">Evaluaciones realizadas</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-calendar-check text-success" style="font-size: 2rem;"></i>
+                <h3 class="mt-2 mb-0">
+                    {% if estadisticas.ultima_evaluacion %}
+                        {{ estadisticas.ultima_evaluacion.strftime('%d/%m/%Y') }}
+                    {% else %}
+                        --
+                    {% endif %}
+                </h3>
+                <p class="text-muted mb-0">Última evaluación</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <div class="card h-100 bg-primary text-white">
+            <div class="card-body">
+                <h5><i class="bi bi-info-circle me-2"></i>Información importante</h5>
+                <p class="mb-0 small">
+                    Este sistema es una herramienta de tamizaje, no de diagnóstico.
+                    Los cuestionarios ayudan a identificar indicadores que pueden requerir
+                    atención profesional.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cuestionarios disponibles -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-clipboard-check me-2"></i>
+                Cuestionarios Disponibles
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for cuestionario in cuestionarios %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card border h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <span class="badge bg-primary me-2">{{ cuestionario.codigo }}</span>
+                                    {{ cuestionario.nombre }}
+                                </h5>
+                                <p class="card-text text-muted small">
+                                    {{ cuestionario.descripcion or 'Cuestionario de tamizaje estandarizado.' }}
+                                </p>
+                                <p class="card-text">
+                                    <small class="text-muted">
+                                        <i class="bi bi-list-ol me-1"></i>
+                                        {{ cuestionario.preguntas.count() }} preguntas
+                                    </small>
+                                </p>
+                                <a href="{{ url_for('cuestionarios.ver', codigo=cuestionario.codigo) }}"
+                                   class="btn btn-primary btn-sm">
+                                    <i class="bi bi-play-circle me-1"></i>
+                                    Iniciar cuestionario
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="col-12">
+                        <p class="text-muted">No hay cuestionarios disponibles en este momento.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Historial reciente -->
+{% if historial %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-clock-history me-2"></i>Historial Reciente</span>
+                <a href="{{ url_for('evaluaciones.historial') }}" class="btn btn-sm btn-outline-primary">
+                    Ver todo
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Cuestionario</th>
+                                <th>Puntaje</th>
+                                <th>Nivel</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for evaluacion in historial %}
+                            <tr>
+                                <td>{{ evaluacion.fecha_evaluacion.strftime('%d/%m/%Y %H:%M') }}</td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ evaluacion.cuestionario.codigo }}</span>
+                                </td>
+                                <td>{{ evaluacion.puntaje_total }} / {{ evaluacion.cuestionario.puntaje_maximo }}</td>
+                                <td>
+                                    <span class="badge bg-{{ evaluacion.color_riesgo() }}">
+                                        {{ evaluacion.etiqueta_riesgo() }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('evaluaciones.resultado', evaluacion_id=evaluacion.id) }}"
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

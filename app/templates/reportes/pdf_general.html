@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte General - Mentis Cura</title>
+    <style>
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            color: #1a202c;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: #2c5282;
+            color: white;
+            padding: 16px 24px;
+            margin-bottom: 20px;
+        }
+        .header h1 { font-size: 18px; margin: 0 0 4px 0; }
+        .header p  { font-size: 10px; margin: 0; opacity: 0.85; }
+
+        .periodo-box {
+            background-color: #ebf4ff;
+            border-left: 4px solid #2c5282;
+            padding: 8px 12px;
+            margin-bottom: 20px;
+            font-size: 10px;
+            color: #2d3748;
+        }
+
+        h2 {
+            font-size: 13px;
+            color: #2c5282;
+            border-bottom: 1px solid #bee3f8;
+            padding-bottom: 4px;
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+
+        /* Tarjetas de resumen */
+        .resumen {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .resumen td {
+            width: 33%;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            padding: 12px 8px;
+            background-color: #f7fafc;
+        }
+        .resumen .numero {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c5282;
+        }
+        .resumen .etiqueta {
+            font-size: 9px;
+            color: #718096;
+        }
+
+        /* Tablas */
+        table.data {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 10px;
+        }
+        table.data th {
+            background-color: #2c5282;
+            color: white;
+            padding: 6px 8px;
+            text-align: left;
+        }
+        table.data td {
+            padding: 5px 8px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        table.data tr:nth-child(even) td {
+            background-color: #f7fafc;
+        }
+        table.data tfoot td {
+            background-color: #ebf4ff;
+            font-weight: bold;
+            border-top: 2px solid #2c5282;
+        }
+        .text-center { text-align: center; }
+        .text-right  { text-align: right; }
+
+        /* Barra de progreso simple para PDF */
+        .barra-wrap {
+            background-color: #e2e8f0;
+            height: 8px;
+            width: 100%;
+        }
+        .barra-fill {
+            height: 8px;
+            background-color: #2c5282;
+        }
+
+        .badge-riesgo {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: bold;
+            color: white;
+        }
+        .bg-success { background-color: #38a169; }
+        .bg-info    { background-color: #3182ce; }
+        .bg-warning { background-color: #d69e2e; color: #1a202c; }
+        .bg-danger  { background-color: #e53e3e; }
+
+        .footer-note {
+            font-size: 8px;
+            color: #a0aec0;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 8px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        /* Marca de agua */
+        .pdf-watermark {
+            position: fixed;
+            top: 220px;
+            left: 70px;
+            width: 420px;
+            opacity: 0.055;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Marca de agua Mentis Cura -->
+    <img class="pdf-watermark" src="/static/images/logo_mentis_cura.png" alt="">
+
+    <!-- Encabezado -->
+    <div class="header">
+        <h1>&#9829; Mentis Cura &mdash; Reporte General de Evaluaciones</h1>
+        <p>Sistema de Monitoreo Psicológico &mdash; Solo para uso interno del personal autorizado</p>
+    </div>
+
+    <!-- Período -->
+    <div class="periodo-box">
+        <strong>Período:</strong> {{ datos.periodo.etiqueta }}
+        &nbsp;&mdash;&nbsp;
+        {{ datos.periodo.fecha_desde.strftime('%d/%m/%Y') }}
+        al
+        {{ datos.periodo.fecha_hasta.strftime('%d/%m/%Y %H:%M') }}
+        &nbsp;&mdash;&nbsp;
+        {% if datos.periodo.anio_cursa %}
+            <strong>{{ datos.periodo.anio_cursa }}° Año</strong>
+        {% else %}
+            Todos los años
+        {% endif %}
+        &nbsp;&mdash;&nbsp;
+        Generado: {{ datos.periodo.fecha_hasta.strftime('%d/%m/%Y %H:%M') }} UTC
+    </div>
+
+    <!-- Resumen -->
+    <h2>Resumen del Período</h2>
+    <table class="resumen">
+        <tr>
+            <td>
+                <div class="numero">{{ datos.totales.evaluaciones }}</div>
+                <div class="etiqueta">Evaluaciones realizadas</div>
+            </td>
+            <td>
+                <div class="numero">{{ datos.totales.puntaje_promedio }}</div>
+                <div class="etiqueta">Puntaje promedio</div>
+            </td>
+            <td>
+                <div class="numero">{{ datos.totales.con_alerta_critica }}</div>
+                <div class="etiqueta">Con alerta crítica ({{ datos.totales.porcentaje_critica }}%)</div>
+            </td>
+        </tr>
+    </table>
+
+    {% if datos.totales.evaluaciones == 0 %}
+    <p style="text-align:center; color:#718096;">No hay evaluaciones en el período seleccionado.</p>
+    {% else %}
+
+    <!-- Distribución por nivel de riesgo -->
+    <h2>Distribución por Nivel de Riesgo</h2>
+    <table class="data">
+        <thead>
+            <tr>
+                <th>Nivel de Riesgo</th>
+                <th class="text-center">Evaluaciones</th>
+                <th class="text-center">Porcentaje</th>
+                <th style="width:120px;">Barra</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fila in datos.distribucion_riesgo %}
+            <tr>
+                <td>{{ fila.etiqueta }}</td>
+                <td class="text-center">{{ fila.count }}</td>
+                <td class="text-center">{{ fila.porcentaje }}%</td>
+                <td>
+                    <div class="barra-wrap">
+                        <div class="barra-fill" style="width:{{ fila.porcentaje }}%;"></div>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td>Total</td>
+                <td class="text-center">{{ datos.totales.evaluaciones }}</td>
+                <td class="text-center">100%</td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <!-- Desglose por Carrera -->
+    <h2>Desglose por Carrera</h2>
+    {% if datos.desglose_carrera %}
+    <table class="data">
+        <thead>
+            <tr>
+                <th>Carrera</th>
+                <th class="text-center">Evaluaciones</th>
+                <th class="text-center">Puntaje promedio</th>
+                <th>Riesgo predominante</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fila in datos.desglose_carrera %}
+            <tr>
+                <td>{{ fila.etiqueta }}</td>
+                <td class="text-center">{{ fila.count }}</td>
+                <td class="text-center">{{ fila.promedio }}</td>
+                <td>{{ fila.etiqueta_riesgo }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color:#718096; font-size:10px;">Sin datos para este período.</p>
+    {% endif %}
+
+    <!-- Desglose por Compañía -->
+    <h2>Desglose por Compañía</h2>
+    {% if datos.desglose_compania %}
+    <table class="data">
+        <thead>
+            <tr>
+                <th>Compañía</th>
+                <th class="text-center">Evaluaciones</th>
+                <th class="text-center">Puntaje promedio</th>
+                <th>Riesgo predominante</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fila in datos.desglose_compania %}
+            <tr>
+                <td>{{ fila.etiqueta }}</td>
+                <td class="text-center">{{ fila.count }}</td>
+                <td class="text-center">{{ fila.promedio }}</td>
+                <td>{{ fila.etiqueta_riesgo }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color:#718096; font-size:10px;">Sin datos para este período.</p>
+    {% endif %}
+
+    {% endif %}
+
+    <div class="footer-note">
+        Mentis Cura v1.0 &mdash; Documento de uso exclusivo del personal autorizado.
+        Este sistema NO realiza diagnósticos clínicos. Solo tamizaje y alertamiento.
+    </div>
+
+</body>
+</html>

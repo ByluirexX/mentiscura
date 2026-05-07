@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Panel de Control - Mentis Cura{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="bi bi-speedometer2 me-2"></i>
+            Panel de Control
+        </h2>
+    </div>
+</div>
+
+<!-- Estadísticas de alertas -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card h-100 border-danger">
+            <div class="card-body text-center">
+                <i class="bi bi-exclamation-octagon text-danger" style="font-size: 2rem;"></i>
+                <h3 class="mt-2 mb-0 text-danger">{{ alertas_stats.criticas_pendientes }}</h3>
+                <p class="text-muted mb-0">Alertas Críticas</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card h-100 border-warning">
+            <div class="card-body text-center">
+                <i class="bi bi-bell text-warning" style="font-size: 2rem;"></i>
+                <h3 class="mt-2 mb-0 text-warning">{{ alertas_stats.pendientes }}</h3>
+                <p class="text-muted mb-0">Alertas Pendientes</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card h-100 border-success">
+            <div class="card-body text-center">
+                <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
+                <h3 class="mt-2 mb-0 text-success">{{ alertas_stats.atendidas }}</h3>
+                <p class="text-muted mb-0">Alertas Atendidas</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-bar-chart text-primary" style="font-size: 2rem;"></i>
+                <h3 class="mt-2 mb-0">{{ alertas_stats.total }}</h3>
+                <p class="text-muted mb-0">Total Alertas</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Alertas recientes -->
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-bell me-2"></i>Alertas Pendientes Recientes</span>
+                <a href="{{ url_for('alertas.listado') }}" class="btn btn-sm btn-outline-primary">
+                    Ver todas
+                </a>
+            </div>
+            <div class="card-body p-0">
+                {% if alertas_recientes %}
+                <div class="list-group list-group-flush">
+                    {% for alerta in alertas_recientes %}
+                    <a href="{{ url_for('alertas.detalle', alerta_id=alerta.id) }}"
+                       class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between align-items-start">
+                            <div>
+                                <span class="badge bg-{{ alerta.color_prioridad() }} me-2">
+                                    {{ alerta.prioridad|upper }}
+                                </span>
+                                <strong>{{ alerta.usuario.nombre_completo() }}</strong>
+                                <p class="mb-1 text-muted small">{{ alerta.mensaje[:100] }}...</p>
+                            </div>
+                            <small class="text-muted">
+                                {{ alerta.created_at.strftime('%d/%m %H:%M') }}
+                            </small>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="p-4 text-center text-muted">
+                    <i class="bi bi-check-circle" style="font-size: 2rem;"></i>
+                    <p class="mt-2 mb-0">No hay alertas pendientes</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones rápidas -->
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-lightning me-2"></i>
+                Acciones Rápidas
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('alertas.listado', estado='pendiente', prioridad='critica') }}"
+                       class="btn btn-danger">
+                        <i class="bi bi-exclamation-octagon me-2"></i>
+                        Ver Alertas Críticas
+                    </a>
+                    <a href="{{ url_for('alertas.listado_discentes') }}" class="btn btn-primary">
+                        <i class="bi bi-people me-2"></i>
+                        Consultar Discentes
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cuestionarios -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="bi bi-clipboard-check me-2"></i>
+                Cuestionarios Activos
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for cuestionario in cuestionarios %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>
+                            <span class="badge bg-primary me-2">{{ cuestionario.codigo }}</span>
+                            {{ cuestionario.nombre }}
+                        </span>
+                        <span class="badge bg-secondary">
+                            {{ cuestionario.preguntas.count() }} preguntas
+                        </span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

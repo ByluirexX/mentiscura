@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - Mentis Cura</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f3f4f6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+            font-size: 0.9rem;
+        }
+
+        .login-wrap {
+            width: 100%;
+            max-width: 380px;
+            padding: 1rem;
+        }
+
+        .login-card {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+        }
+
+        .login-header {
+            padding: 1.75rem 1.75rem 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .login-header h1 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #111827;
+            margin: 0 0 0.2rem;
+            letter-spacing: 0.01em;
+        }
+
+        .login-header p {
+            color: #6b7280;
+            font-size: 0.82rem;
+            margin: 0;
+        }
+
+        .login-body {
+            padding: 1.5rem 1.75rem;
+        }
+
+        .form-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.3rem;
+        }
+
+        .form-control {
+            border-color: #d1d5db;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            padding: 0.5rem 0.75rem;
+        }
+
+        .form-control:focus {
+            border-color: #9ca3af;
+            box-shadow: 0 0 0 2px rgba(31,41,55,0.08);
+        }
+
+        .btn-login {
+            background-color: #1f2937;
+            border-color: #1f2937;
+            color: #ffffff;
+            font-size: 0.875rem;
+            padding: 0.55rem;
+            border-radius: 0.25rem;
+            width: 100%;
+        }
+
+        .btn-login:hover {
+            background-color: #111827;
+            border-color: #111827;
+            color: #ffffff;
+        }
+
+        .login-footer {
+            padding: 0.9rem 1.75rem;
+            border-top: 1px solid #e5e7eb;
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        .login-footer a {
+            color: #1f2937;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .disclaimer {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 1.75rem;
+        }
+
+        .login-logo img {
+            width: 150px;
+            height: auto;
+            display: inline-block;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="login-wrap">
+        <!-- Logo centrado en la parte superior -->
+        <div class="login-logo">
+            <img src="{{ url_for('static', filename='images/logo_mentis_cura.png') }}"
+                 alt="Mentis Cura - Sistema de Monitoreo Psicológico">
+        </div>
+
+        <div class="login-card">
+            <div class="login-header">
+                <h1>Iniciar Sesión</h1>
+                <p>Sistema de Monitoreo Psicológico</p>
+            </div>
+
+            <div class="login-body">
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show py-2 mb-3" role="alert">
+                            <small>{{ message }}</small>
+                            <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST" action="{{ url_for('auth.login') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Usuario</label>
+                        <input type="text" class="form-control" id="username" name="username"
+                               autocomplete="username" required autofocus>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label">Contraseña</label>
+                        <input type="password" class="form-control" id="password" name="password"
+                               autocomplete="current-password" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-login">Iniciar sesión</button>
+                </form>
+            </div>
+
+            <div class="login-footer">
+                ¿No tiene cuenta?
+                <a href="{{ url_for('auth.registro') }}">Registrarse como Discente</a>
+            </div>
+        </div>
+
+        <p class="disclaimer">
+            Acceso restringido. Todos los accesos son registrados.<br>
+            Prototipo de Sistema de Monitoreo Psicologico — Sistema Educativo Militar.
+        </p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

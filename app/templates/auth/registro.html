@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - Mentis Cura</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #2c5282 0%, #1a365d 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+
+        .registro-card {
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .registro-header {
+            text-align: center;
+            padding: 1.5rem 2rem 1rem;
+        }
+
+        .registro-header i {
+            font-size: 2.5rem;
+            color: #2c5282;
+        }
+
+        .registro-header h1 {
+            font-size: 1.4rem;
+            margin-top: 0.75rem;
+            color: #2d3748;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+
+        .required::after {
+            content: " *";
+            color: #e53e3e;
+        }
+
+        .btn-registro {
+            background-color: #2c5282;
+            border-color: #2c5282;
+            padding: 0.75rem;
+        }
+
+        .btn-registro:hover {
+            background-color: #1a365d;
+            border-color: #1a365d;
+        }
+
+        .matricula-help {
+            font-size: 0.8rem;
+            color: #718096;
+        }
+
+        .section-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #2c5282;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="registro-card">
+            <div class="card shadow">
+                <div class="registro-header">
+                    <i class="bi bi-person-plus"></i>
+                    <h1>Registro de Discente</h1>
+                    <p class="text-muted small mb-0">Complete sus datos para crear una cuenta</p>
+                </div>
+
+                <div class="card-body p-4">
+                    <!-- Flash Messages -->
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show py-2" role="alert">
+                                <small>{{ message }}</small>
+                                <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" action="{{ url_for('auth.registro') }}" id="formRegistro">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                        <!-- Datos Personales -->
+                        <div class="section-title">
+                            <i class="bi bi-person me-1"></i>
+                            Datos Personales
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <label class="form-label required">Nombre(s)</label>
+                                <input type="text" name="nombre" class="form-control"
+                                       placeholder="Ej: Juan Carlos" required minlength="2"
+                                       value="{{ request.form.get('nombre', '') }}">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label required">Apellido Paterno</label>
+                                <input type="text" name="apellido_paterno" class="form-control"
+                                       placeholder="Ej: Pérez" required minlength="2"
+                                       value="{{ request.form.get('apellido_paterno', '') }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Apellido Materno</label>
+                                <input type="text" name="apellido_materno" class="form-control"
+                                       placeholder="Ej: García"
+                                       value="{{ request.form.get('apellido_materno', '') }}">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label required">Matrícula</label>
+                                <input type="text" name="matricula" class="form-control text-uppercase"
+                                       placeholder="Ej: A12345" required
+                                       pattern="[A-Za-z][0-9]+"
+                                       value="{{ request.form.get('matricula', '') }}">
+                                <div class="matricula-help">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Una letra seguida de números. Esta será su usuario para iniciar sesión.
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label required">Edad</label>
+                                <input type="number" name="edad" class="form-control"
+                                       min="16" max="50" required
+                                       value="{{ request.form.get('edad', '') }}">
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label required">Sexo</label>
+                                <select name="sexo" class="form-select" required>
+                                    <option value="">Seleccione...</option>
+                                    {% for codigo, nombre in sexos %}
+                                    <option value="{{ codigo }}"
+                                        {% if request.form.get('sexo') == codigo %}selected{% endif %}>
+                                        {{ nombre }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label required">Estado Civil</label>
+                                <select name="estado_civil" class="form-select" required>
+                                    <option value="">Seleccione...</option>
+                                    {% for codigo, nombre in estados_civiles %}
+                                    <option value="{{ codigo }}"
+                                        {% if request.form.get('estado_civil') == codigo %}selected{% endif %}>
+                                        {{ nombre }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Datos Académicos -->
+                        <div class="section-title">
+                            <i class="bi bi-mortarboard me-1"></i>
+                            Datos Académicos
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label required">Año que Cursa</label>
+                                <select name="anio_cursa" id="anio_cursa" class="form-select" required>
+                                    <option value="">Seleccione...</option>
+                                    {% for anio in [1, 2, 3, 4, 5, 6] %}
+                                    <option value="{{ anio }}"
+                                        {% if request.form.get('anio_cursa')|int == anio %}selected{% endif %}>
+                                        {{ anio }}° Año
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label required">Grupo</label>
+                                <select name="grupo" id="grupo" class="form-select" required>
+                                    <option value="">Seleccione primero el año...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label required">Compañía</label>
+                                <select name="compania" class="form-select" required>
+                                    <option value="">Seleccione...</option>
+                                    {% for codigo, nombre in companias %}
+                                    <option value="{{ codigo }}"
+                                        {% if request.form.get('compania') == codigo %}selected{% endif %}>
+                                        {{ nombre }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label required">Carrera</label>
+                                <select name="carrera" class="form-select" required>
+                                    <option value="">Seleccione...</option>
+                                    {% for codigo, nombre in carreras %}
+                                    <option value="{{ codigo }}"
+                                        {% if request.form.get('carrera') == codigo %}selected{% endif %}>
+                                        {{ nombre }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-4"></div>
+
+                        <!-- Contraseña -->
+                        <div class="section-title">
+                            <i class="bi bi-shield-lock me-1"></i>
+                            Seguridad
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label required">Contraseña</label>
+                                <input type="password" name="password" class="form-control"
+                                       required minlength="6" id="password">
+                                <div class="matricula-help">Mínimo 6 caracteres</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label required">Confirmar Contraseña</label>
+                                <input type="password" name="password_confirm" class="form-control"
+                                       required minlength="6" id="password_confirm">
+                            </div>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-registro">
+                                <i class="bi bi-person-check me-2"></i>
+                                Crear Cuenta
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card-footer text-center py-3">
+                    <span class="text-muted">¿Ya tiene cuenta?</span>
+                    <a href="{{ url_for('auth.login') }}" class="text-decoration-none ms-1">
+                        <i class="bi bi-box-arrow-in-right me-1"></i>
+                        Iniciar Sesión
+                    </a>
+                </div>
+            </div>
+
+            <p class="text-center text-white-50 mt-3 small">
+                Mentis Cura - Sistema de Monitoreo Psicológico
+            </p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // ── Grupos por año ────────────────────────────────────────────
+        const GRUPOS = {
+            1: [['A','A'],['B','B'],['C','C'],['D','D'],['E','E'],['F','F']],
+            2: [['A','A'],['B','B'],['C','C'],['D','D'],['E','E'],['F','F'],
+                ['IC','I.C.'],['ICE','I.C.E.'],['IIM','I.I.M.'],['IIQ','I.I.Q.'],['IIE','I.I.E.'],['ICI','I.C.I.']],
+        };
+        const GRUPOS_RESTO = [
+            ['IC','I.C.'],['ICE','I.C.E.'],['IIM','I.I.M.'],['IIQ','I.I.Q.'],['IIE','I.I.E.'],['ICI','I.C.I.']
+        ];
+
+        const selAnio = document.getElementById('anio_cursa');
+        const selGrupo = document.getElementById('grupo');
+        const grupoGuardado = "{{ request.form.get('grupo', '') }}";
+
+        function actualizarGrupos() {
+            const anio = parseInt(selAnio.value);
+            selGrupo.innerHTML = '<option value="">Seleccione...</option>';
+
+            if (!anio) return;
+
+            const opciones = anio === 1 ? GRUPOS[1] : anio === 2 ? GRUPOS[2] : GRUPOS_RESTO;
+            opciones.forEach(([val, label]) => {
+                const opt = document.createElement('option');
+                opt.value = val;
+                opt.textContent = label;
+                if (val === grupoGuardado) opt.selected = true;
+                selGrupo.appendChild(opt);
+            });
+        }
+
+        selAnio.addEventListener('change', actualizarGrupos);
+
+        // Inicializar si hay año seleccionado (ej: al volver con errores)
+        if (selAnio.value) actualizarGrupos();
+
+        // ── Validación de contraseñas ─────────────────────────────────
+        document.getElementById('formRegistro').addEventListener('submit', function(e) {
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('password_confirm').value;
+            if (password !== confirm) {
+                e.preventDefault();
+                alert('Las contraseñas no coinciden.');
+            }
+        });
+
+        // ── Matrícula a mayúsculas ────────────────────────────────────
+        document.querySelector('input[name="matricula"]').addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Nuevo Usuario' if modo == 'nuevo' else 'Editar Usuario' }} - Mentis Cura{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('admin.index') }}">Administración</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('admin.usuarios') }}">Usuarios</a></li>
+                <li class="breadcrumb-item active">{{ 'Nuevo' if modo == 'nuevo' else 'Editar' }}</li>
+            </ol>
+        </nav>
+        <h2>
+            <i class="bi bi-person-{{ 'plus' if modo == 'nuevo' else 'gear' }} me-2"></i>
+            {{ 'Nuevo Usuario' if modo == 'nuevo' else 'Editar Usuario' }}
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <!-- Datos Personales -->
+                    <h6 class="text-primary mb-3">
+                        <i class="bi bi-person me-1"></i> Datos Personales
+                    </h6>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                            <input type="text" name="nombre" class="form-control"
+                                   value="{{ usuario.nombre if usuario else '' }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Apellido Paterno <span class="text-danger">*</span></label>
+                            <input type="text" name="apellido_paterno" class="form-control"
+                                   value="{{ usuario.apellido_paterno if usuario else '' }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Apellido Materno</label>
+                            <input type="text" name="apellido_materno" class="form-control"
+                                   value="{{ usuario.apellido_materno if usuario else '' }}">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Usuario <span class="text-danger">*</span></label>
+                            <input type="text" name="username" class="form-control"
+                                   value="{{ usuario.username if usuario else '' }}"
+                                   {% if modo == 'editar' %}readonly{% endif %}
+                                   required minlength="3">
+                            {% if modo == 'editar' %}
+                            <small class="text-muted">El nombre de usuario no se puede cambiar.</small>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Contraseña
+                                {% if modo == 'nuevo' %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+                            <input type="password" name="password" class="form-control"
+                                   {% if modo == 'nuevo' %}required{% endif %} minlength="6">
+                            {% if modo == 'editar' %}
+                            <small class="text-muted">Dejar en blanco para mantener la actual.</small>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Matrícula</label>
+                            <input type="text" name="identificacion" class="form-control text-uppercase"
+                                   value="{{ usuario.matricula if usuario else '' }}">
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Rol <span class="text-danger">*</span></label>
+                            <select name="rol_id" class="form-select" required id="selectRol">
+                                <option value="">Seleccione un rol</option>
+                                {% for rol in roles %}
+                                <option value="{{ rol.id }}"
+                                    data-rol="{{ rol.nombre }}"
+                                    {% if usuario and usuario.rol_id == rol.id %}selected{% endif %}>
+                                    {{ rol.nombre_display }}
+                                    {% if rol.descripcion %} - {{ rol.descripcion }}{% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        {% if modo == 'editar' %}
+                        <div class="col-md-6">
+                            <label class="form-label">Estado</label>
+                            <div class="form-check form-switch mt-2">
+                                <input type="checkbox" name="activo" class="form-check-input" id="activo"
+                                       {% if usuario.activo %}checked{% endif %}>
+                                <label class="form-check-label" for="activo">Usuario activo</label>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Datos Académicos (solo para discentes) -->
+                    <div id="datosAcademicos" style="display: none;">
+                        <hr>
+                        <h6 class="text-primary mb-3">
+                            <i class="bi bi-mortarboard me-1"></i> Datos Académicos (Discente)
+                        </h6>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Edad</label>
+                                <input type="number" name="edad" class="form-control"
+                                       min="16" max="50"
+                                       value="{{ usuario.edad if usuario else '' }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Año que Cursa</label>
+                                <select name="anio_cursa" class="form-select">
+                                    <option value="">Seleccione...</option>
+                                    {% for anio in [1, 2, 3, 4, 5, 6] %}
+                                    <option value="{{ anio }}"
+                                        {% if usuario and usuario.anio_cursa == anio %}selected{% endif %}>
+                                        {{ anio }}° Año
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Compañía</label>
+                                <select name="compania" class="form-select">
+                                    <option value="">Seleccione...</option>
+                                    <option value="primera" {% if usuario and usuario.compania == 'primera' %}selected{% endif %}>Primera Cía.</option>
+                                    <option value="segunda" {% if usuario and usuario.compania == 'segunda' %}selected{% endif %}>Segunda Cía.</option>
+                                    <option value="tercera" {% if usuario and usuario.compania == 'tercera' %}selected{% endif %}>Tercera Cía.</option>
+                                    <option value="cuarta" {% if usuario and usuario.compania == 'cuarta' %}selected{% endif %}>Cuarta Cía.</option>
+                                    <option value="oficiales" {% if usuario and usuario.compania == 'oficiales' %}selected{% endif %}>Cía. Oficiales</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <label class="form-label">Carrera</label>
+                                <select name="carrera" class="form-select">
+                                    <option value="">Seleccione...</option>
+                                    <option value="tronco_comun" {% if usuario and usuario.carrera == 'tronco_comun' %}selected{% endif %}>Tronco Común</option>
+                                    <option value="ing_computacion" {% if usuario and usuario.carrera == 'ing_computacion' %}selected{% endif %}>Ingeniería en Computación e Informática</option>
+                                    <option value="ing_industrial" {% if usuario and usuario.carrera == 'ing_industrial' %}selected{% endif %}>Ingeniería Industrial</option>
+                                    <option value="ing_comunicaciones" {% if usuario and usuario.carrera == 'ing_comunicaciones' %}selected{% endif %}>Ingeniería en Comunicaciones y Electrónica</option>
+                                    <option value="ing_construccion" {% if usuario and usuario.carrera == 'ing_construccion' %}selected{% endif %}>Ingeniería en Construcción</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin.usuarios') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-1"></i>
+                            {{ 'Crear Usuario' if modo == 'nuevo' else 'Guardar Cambios' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-info-circle me-2"></i>
+                Información
+            </div>
+            <div class="card-body">
+                <h6>Roles disponibles:</h6>
+                <ul class="small">
+                    <li><strong>Administrador:</strong> Acceso total al sistema.</li>
+                    <li><strong>Orientador:</strong> Gestión de alertas y consulta de evaluaciones.</li>
+                    <li><strong>Discente:</strong> Responde cuestionarios y ve su historial.</li>
+                </ul>
+
+                <hr>
+
+                <h6>Requisitos de contraseña:</h6>
+                <ul class="small text-muted">
+                    <li>Mínimo 6 caracteres</li>
+                </ul>
+
+                <hr>
+
+                <h6>Nota para discentes:</h6>
+                <p class="small text-muted mb-0">
+                    Los campos académicos solo aplican para usuarios con rol de Discente.
+                    La matrícula se usa como identificador único.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectRol = document.getElementById('selectRol');
+    const datosAcademicos = document.getElementById('datosAcademicos');
+
+    function toggleDatosAcademicos() {
+        const selectedOption = selectRol.options[selectRol.selectedIndex];
+        const rolNombre = selectedOption.getAttribute('data-rol');
+
+        if (rolNombre === 'discente') {
+            datosAcademicos.style.display = 'block';
+        } else {
+            datosAcademicos.style.display = 'none';
+        }
+    }
+
+    selectRol.addEventListener('change', toggleDatosAcademicos);
+
+    // Ejecutar al cargar la página
+    toggleDatosAcademicos();
+});
+</script>
+{% endblock %}

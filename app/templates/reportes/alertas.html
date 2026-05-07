@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+
+{% block title %}Reporte de Alertas - Mentis Cura{% endblock %}
+
+{% block content %}
+
+<!-- ===== ENCABEZADO ===== -->
+<div class="row mb-3 align-items-center">
+    <div class="col">
+        <h2>
+            <i class="bi bi-bell-fill me-2"></i>
+            Reporte de Alertas
+        </h2>
+        <p class="text-muted mb-0">
+            Período: <strong>{{ datos.periodo.etiqueta }}</strong>
+            &mdash;
+            {{ datos.periodo.fecha_desde.strftime('%d/%m/%Y') }}
+            al
+            {{ datos.periodo.fecha_hasta.strftime('%d/%m/%Y %H:%M') }}
+            {% if datos.periodo.anio_cursa %}
+            &mdash; <strong>{{ datos.periodo.anio_cursa }}° Año</strong>
+            {% else %}
+            &mdash; Todos los años
+            {% endif %}
+        </p>
+    </div>
+    <div class="col-auto d-flex gap-2">
+        <a href="{{ url_for('reportes.alertas_pdf', periodicidad=periodicidad, anio_cursa=anio_cursa or '') }}"
+           class="btn btn-outline-danger">
+            <i class="bi bi-file-earmark-pdf me-1"></i> Exportar PDF
+        </a>
+        <a href="{{ url_for('reportes.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Nuevo reporte
+        </a>
+    </div>
+</div>
+
+<!-- ===== FILTROS ===== -->
+<div class="card mb-4">
+    <div class="card-body py-2">
+        <form method="GET" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small mb-1">Periodicidad</label>
+                <select name="periodicidad" class="form-select form-select-sm">
+                    {% for valor, etiqueta in periodicidades %}
+                    <option value="{{ valor }}" {% if valor == periodicidad %}selected{% endif %}>
+                        {{ etiqueta }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small mb-1">Año que cursa</label>
+                <select name="anio_cursa" class="form-select form-select-sm">
+                    <option value="">Todos los años</option>
+                    {% for anio in anios_cursa %}
+                    <option value="{{ anio }}" {% if anio == anio_cursa %}selected{% endif %}>
+                        {{ anio }}° Año
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="bi bi-funnel me-1"></i> Aplicar filtros
+                </button>
+                <a href="{{ url_for('reportes.alertas') }}" class="btn btn-outline-secondary btn-sm ms-1">
+                    Limpiar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ===== SIN DATOS ===== -->
+{% if datos.total == 0 %}
+<div class="card">
+    <div class="card-body text-center py-5">
+        <i class="bi bi-check-circle text-success" style="font-size: 4rem;"></i>
+        <h4 class="mt-3 text-muted">No hay alertas en el período seleccionado</h4>
+        <p class="text-muted">Prueba con un período más amplio o sin filtro de año.</p>
+    </div>
+</div>
+{% else %}
+
+<!-- ===== TOTAL ===== -->
+<div class="alert alert-secondary d-flex align-items-center gap-3 mb-4">
+    <i class="bi bi-bell fs-4"></i>
+    <div>
+        <strong>Total de alertas en el período: {{ datos.total }}</strong>
+    </div>
+</div>
+
+<div class="row g-4">
+
+    <!-- ===== CONTEO POR PRIORIDAD ===== -->
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="bi bi-sort-down me-2"></i>
+                Alertas por Prioridad
+            </div>
+            <div class="card-body">
+                <!-- Crítica -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fw-semibold">
+                            <i class="bi bi-exclamation-octagon-fill me-1"></i> Crítica
+                        </span>
+                        <span class="badge bg-dark fs-6">{{ datos.conteo_prioridad.critica }}</span>
+                    </div>
+                    <div class="progress" style="height:12px;">
+                        <div class="progress-bar bg-dark"
+                             style="width:{{ datos.porcentajes_prioridad.critica }}%;"
+                             title="{{ datos.porcentajes_prioridad.critica }}%">
+                        </div>
+                    </div>
+                    <small class="text-muted">{{ datos.porcentajes_prioridad.critica }}% del total</small>
+                </div>
+                <!-- Alta -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fw-semibold">
+                            <i class="bi bi-exclamation-circle-fill me-1"></i> Alta
+                        </span>
+                        <span class="badge bg-danger fs-6">{{ datos.conteo_prioridad.alta }}</span>
+                    </div>
+                    <div class="progress" style="height:12px;">
+                        <div class="progress-bar bg-danger"
+                             style="width:{{ datos.porcentajes_prioridad.alta }}%;">
+                        </div>
+                    </div>
+                    <small class="text-muted">{{ datos.porcentajes_prioridad.alta }}% del total</small>
+                </div>
+                <!-- Media -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fw-semibold">
+                            <i class="bi bi-exclamation-triangle me-1"></i> Media
+                        </span>
+                        <span class="badge bg-warning text-dark fs-6">{{ datos.conteo_prioridad.media }}</span>
+                    </div>
+                    <div class="progress" style="height:12px;">
+                        <div class="progress-bar bg-warning"
+                             style="width:{{ datos.porcentajes_prioridad.media }}%;">
+                        </div>
+                    </div>
+                    <small class="text-muted">{{ datos.porcentajes_prioridad.media }}% del total</small>
+                </div>
+                <!-- Baja -->
+                <div class="mb-0">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fw-semibold">
+                            <i class="bi bi-info-circle me-1"></i> Baja
+                        </span>
+                        <span class="badge bg-info fs-6">{{ datos.conteo_prioridad.baja }}</span>
+                    </div>
+                    <div class="progress" style="height:12px;">
+                        <div class="progress-bar bg-info"
+                             style="width:{{ datos.porcentajes_prioridad.baja }}%;">
+                        </div>
+                    </div>
+                    <small class="text-muted">{{ datos.porcentajes_prioridad.baja }}% del total</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== CONTEO POR ESTADO ===== -->
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="bi bi-kanban me-2"></i>
+                Alertas por Estado
+            </div>
+            <div class="card-body">
+                <!-- Pendiente -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fw-semibold">
+                            <i class="bi bi-hourglass-split me-1"></i> Pendiente
+                        </span>
+                        <span class="badge bg-warning text-dark fs-6">{{ datos.conteo_estado.pendiente }}</span>
+                    </div>
+                    <div class="progress" style="height:12px;">
+                        <div class="progress-bar bg-warning"
+                             style="width:{{ datos.porcentajes_estado.pendiente }}%;">
+                        </div>
+                    </div>
+                    <small class="text-muted">{{ datos.porcentajes_estado.pendiente }}% del total</small>
+                </div>
+                <!-- En revisión -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fw-semibold">
+                            <i class="bi bi-eye me-1"></i> En Revisión
+                        </span>
+                        <span class="badge bg-info fs-6">{{ datos.conteo_estado.en_revision }}</span>
+                    </div>
+                    <div class="progress" style="height:12px;">
+                        <div class="progress-bar bg-info"
+                             style="width:{{ datos.porcentajes_estado.en_revision }}%;">
+                        </div>
+                    </div>
+                    <small class="text-muted">{{ datos.porcentajes_estado.en_revision }}% del total</small>
+                </div>
+                <!-- Atendida -->
+                <div class="mb-0">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fw-semibold">
+                            <i class="bi bi-check-circle me-1"></i> Atendida
+                        </span>
+                        <span class="badge bg-success fs-6">{{ datos.conteo_estado.atendida }}</span>
+                    </div>
+                    <div class="progress" style="height:12px;">
+                        <div class="progress-bar bg-success"
+                             style="width:{{ datos.porcentajes_estado.atendida }}%;">
+                        </div>
+                    </div>
+                    <small class="text-muted">{{ datos.porcentajes_estado.atendida }}% del total</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MATRIZ CRUZADA PRIORIDAD x ESTADO ===== -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-table me-2"></i>
+                Matriz Cruzada: Prioridad × Estado
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover mb-0 text-center">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-start" style="width:140px;">Prioridad</th>
+                                <th>Pendiente</th>
+                                <th>En Revisión</th>
+                                <th>Atendida</th>
+                                <th class="table-secondary">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for prioridad in datos.prioridades %}
+                            {% set fila = datos.matriz[prioridad] %}
+                            {% set total_fila = fila.pendiente + fila.en_revision + fila.atendida %}
+                            <tr {% if total_fila == 0 %}class="text-muted"{% endif %}>
+                                <td class="text-start fw-semibold">
+                                    {% if prioridad == 'critica' %}
+                                        <span class="badge bg-dark me-1">&#9679;</span> Crítica
+                                    {% elif prioridad == 'alta' %}
+                                        <span class="badge bg-danger me-1">&#9679;</span> Alta
+                                    {% elif prioridad == 'media' %}
+                                        <span class="badge bg-warning me-1">&#9679;</span> Media
+                                    {% else %}
+                                        <span class="badge bg-info me-1">&#9679;</span> Baja
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if fila.pendiente > 0 %}
+                                    <span class="badge bg-warning text-dark">{{ fila.pendiente }}</span>
+                                    {% else %}—{% endif %}
+                                </td>
+                                <td>
+                                    {% if fila.en_revision > 0 %}
+                                    <span class="badge bg-info">{{ fila.en_revision }}</span>
+                                    {% else %}—{% endif %}
+                                </td>
+                                <td>
+                                    {% if fila.atendida > 0 %}
+                                    <span class="badge bg-success">{{ fila.atendida }}</span>
+                                    {% else %}—{% endif %}
+                                </td>
+                                <td class="table-secondary fw-bold">{{ total_fila }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr class="fw-bold">
+                                <td class="text-start">Total</td>
+                                <td>{{ datos.conteo_estado.pendiente }}</td>
+                                <td>{{ datos.conteo_estado.en_revision }}</td>
+                                <td>{{ datos.conteo_estado.atendida }}</td>
+                                <td class="table-secondary">{{ datos.total }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /row -->
+{% endif %}
+
+{% endblock %}

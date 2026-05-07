@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+
+{% block title %}Resultado ASSIST - Mentis Cura{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.inicio') }}">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('evaluaciones.historial') }}">Historial</a></li>
+                <li class="breadcrumb-item active">Resultado ASSIST</li>
+            </ol>
+        </nav>
+
+        <h2>
+            <i class="bi bi-clipboard-data me-2"></i>
+            Resultado de Evaluación ASSIST
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Resultado principal -->
+    <div class="col-md-8">
+        <!-- Resumen general -->
+        <div class="card resultado-card border-{{ evaluacion.color_riesgo() }} mb-4">
+            <div class="card-header bg-{{ evaluacion.color_riesgo() }} text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-graph-up me-2"></i>
+                    ASSIST - Resumen General
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row text-center mb-4">
+                    <div class="col-md-4">
+                        <h2 class="display-4 mb-0">{{ evaluacion.puntaje_total }}</h2>
+                        <p class="text-muted">Puntaje Total (Suma SSIS)</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h2 class="display-4 mb-0">{{ puntajes_sustancia|length }}</h2>
+                        <p class="text-muted">Sustancias Evaluadas</p>
+                    </div>
+                    <div class="col-md-4">
+                        <span class="badge bg-{{ evaluacion.color_riesgo() }} fs-5 px-4 py-3">
+                            {{ evaluacion.etiqueta_riesgo() }}
+                        </span>
+                        <p class="text-muted mt-2">Nivel de Riesgo Global</p>
+                    </div>
+                </div>
+
+                {% if evaluacion.alerta_pregunta_critica %}
+                <div class="alert alert-danger">
+                    <h5 class="alert-heading">
+                        <i class="bi bi-exclamation-octagon-fill me-2"></i>
+                        {% if evaluacion.puntaje_pregunta_critica >= 2 %}
+                        Alerta: Uso por Vía Inyectada Reciente
+                        {% else %}
+                        Alerta: Reporte de Uso por Vía Inyectada
+                        {% endif %}
+                    </h5>
+                    <p class="mb-0">
+                        {% if evaluacion.puntaje_pregunta_critica >= 2 %}
+                        El discente ha reportado uso de sustancias por vía inyectada en los últimos 3 meses.
+                        Se requiere intervención inmediata y derivación a servicio especializado.
+                        {% else %}
+                        El discente ha reportado uso de sustancias por vía inyectada en algún momento de su vida.
+                        Se recomienda seguimiento y evaluación adicional.
+                        {% endif %}
+                    </p>
+                </div>
+                {% endif %}
+
+                <!-- Interpretacion -->
+                <div class="mt-3">
+                    <h5><i class="bi bi-info-circle me-2"></i>Interpretación</h5>
+                    <div class="alert alert-light border">
+                        {% if evaluacion.nivel_riesgo == 'bajo' %}
+                        <p class="mb-0">
+                            Los puntajes obtenidos indican un riesgo bajo de problemas relacionados con el
+                            consumo de sustancias. Se recomienda mantener hábitos saludables.
+                        </p>
+                        {% elif evaluacion.nivel_riesgo == 'moderado' %}
+                        <p class="mb-0">
+                            Se detecta riesgo moderado en una o más sustancias. Se recomienda una
+                            intervención breve según el protocolo de la OMS para reducir el consumo.
+                        </p>
+                        {% else %}
+                        <p class="mb-0">
+                            Se detecta riesgo alto en una o más sustancias. Se requiere derivación a
+                            tratamiento especializado. Un profesional se pondrá en contacto.
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <small class="text-muted">
+                    <i class="bi bi-calendar me-1"></i>
+                    Evaluación realizada: {{ evaluacion.fecha_evaluacion.strftime('%d/%m/%Y a las %H:%M') }}
+                </small>
+            </div>
+        </div>
+
+        <!-- Recomendación de material de apoyo (solo discentes con alerta generada) -->
+        {% if not puede_ver_respuestas and (evaluacion.alerta_pregunta_critica or evaluacion.nivel_riesgo not in ('minimo', 'bajo')) %}
+        <div class="card border-primary mb-4">
+            <div class="card-body">
+                <div class="d-flex align-items-start gap-3">
+                    <i class="bi bi-book-heart text-primary" style="font-size: 2rem; flex-shrink: 0;"></i>
+                    <div>
+                        <h6 class="mb-1 text-primary">Recursos de Apoyo Psicológico</h6>
+                        <p class="mb-3 small text-muted">
+                            Tu resultado indica que podrías beneficiarte de consultar los materiales
+                            de apoyo disponibles. Encontrarás recursos especializados que pueden
+                            orientarte y apoyarte en este momento.
+                        </p>
+                        <a href="{{ url_for('materiales.listado') }}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-arrow-right-circle me-1"></i>
+                            Ver Material de Apoyo Psicológico
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Desglose por sustancia: solo visible para orientadores y administradores -->
+        {% if puede_ver_respuestas %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-bar-chart me-2"></i>
+                Desglose por Sustancia (SSIS)
+            </div>
+            <div class="card-body">
+                {% set sustancias_nombres = {
+                    'tabaco': 'Tabaco',
+                    'alcohol': 'Alcohol',
+                    'cannabis': 'Cannabis',
+                    'cocaina': 'Cocaína',
+                    'anfetaminas': 'Anfetaminas',
+                    'inhalantes': 'Inhalantes',
+                    'tranquilizantes': 'Tranquilizantes',
+                    'alucinogenos': 'Alucinógenos',
+                    'opiaceos': 'Opiáceos'
+                } %}
+
+                {% set sustancias_evaluadas = [] %}
+                {% for ps in puntajes_sustancia %}
+                    {% if sustancias_evaluadas.append(ps.sustancia) %}{% endif %}
+                {% endfor %}
+
+                <div class="row">
+                    {% for ps in puntajes_sustancia %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card border-{{ ps.color_riesgo() }}">
+                            <div class="card-body py-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">{{ sustancias_nombres.get(ps.sustancia, ps.sustancia) }}</h6>
+                                        <span class="text-muted">SSIS: {{ ps.puntaje }}</span>
+                                    </div>
+                                    <span class="badge bg-{{ ps.color_riesgo() }} fs-6 px-3 py-2">
+                                        {{ ps.etiqueta_riesgo() }}
+                                    </span>
+                                </div>
+                                <!-- Barra de progreso -->
+                                <div class="progress mt-2" style="height: 6px;">
+                                    <div class="progress-bar bg-{{ ps.color_riesgo() }}"
+                                         style="width: {{ (ps.puntaje / 39 * 100)|int }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Sustancias no usadas -->
+                {% set all_sustancias = ['tabaco', 'alcohol', 'cannabis', 'cocaina', 'anfetaminas', 'inhalantes', 'tranquilizantes', 'alucinogenos', 'opiaceos'] %}
+                {% set no_usadas = [] %}
+                {% for s in all_sustancias %}
+                    {% if s not in sustancias_evaluadas %}
+                        {% if no_usadas.append(s) %}{% endif %}
+                    {% endif %}
+                {% endfor %}
+
+                {% if no_usadas %}
+                <hr>
+                <h6 class="text-muted mb-3">Sustancias sin reporte de uso</h6>
+                <div class="d-flex flex-wrap gap-2">
+                    {% for s in no_usadas %}
+                    <span class="badge bg-light text-dark border">
+                        <i class="bi bi-dash-circle me-1"></i>
+                        {{ sustancias_nombres.get(s, s) }} - No reporta uso
+                    </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Q8 - Inyeccion -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-syringe me-2"></i>
+                Uso por Vía Inyectada (Q8)
+            </div>
+            <div class="card-body">
+                {% if evaluacion.puntaje_pregunta_critica == 0 %}
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-success fs-6 px-3 py-2 me-3">
+                        <i class="bi bi-check-circle me-1"></i> No
+                    </span>
+                    <span>No reporta uso de sustancias por vía inyectada</span>
+                </div>
+                {% elif evaluacion.puntaje_pregunta_critica == 1 %}
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-warning text-dark fs-6 px-3 py-2 me-3">
+                        <i class="bi bi-exclamation-triangle me-1"></i> Sí (no reciente)
+                    </span>
+                    <span>Ha usado sustancias por vía inyectada, pero no en los últimos 3 meses</span>
+                </div>
+                {% else %}
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-danger fs-6 px-3 py-2 me-3">
+                        <i class="bi bi-exclamation-octagon me-1"></i> Sí (reciente)
+                    </span>
+                    <span>Ha usado sustancias por vía inyectada en los últimos 3 meses</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}{# fin puede_ver_respuestas #}
+    </div>
+
+    <!-- Panel lateral -->
+    <div class="col-md-4">
+        <!-- Acciones -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-lightning me-2"></i>
+                Acciones
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {% if puede_ver_respuestas %}
+                    <a href="{{ url_for('evaluaciones.imprimir_tamizaje', evaluacion_id=evaluacion.id) }}"
+                       class="btn btn-dark">
+                        <i class="bi bi-download me-2"></i>
+                        Descargar Tamizaje
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('cuestionarios.listado') }}" class="btn btn-primary">
+                        <i class="bi bi-clipboard-check me-2"></i>
+                        Nueva Evaluación
+                    </a>
+                    <a href="{{ url_for('evaluaciones.historial') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-clock-history me-2"></i>
+                        Ver Historial
+                    </a>
+                    <a href="{{ url_for('main.inicio') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-house me-2"></i>
+                        Ir a Inicio
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Escala de referencia -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-rulers me-2"></i>
+                Escala de Referencia ASSIST
+            </div>
+            <div class="card-body">
+                <h6 class="mb-2">Tabaco y otras sustancias</h6>
+                <ul class="list-unstyled mb-3">
+                    <li class="mb-2">
+                        <span class="badge bg-success me-2">0-3</span> Bajo
+                    </li>
+                    <li class="mb-2">
+                        <span class="badge bg-warning me-2">4-26</span> Moderado
+                    </li>
+                    <li>
+                        <span class="badge bg-danger me-2">27+</span> Alto
+                    </li>
+                </ul>
+
+                <h6 class="mb-2">Alcohol</h6>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <span class="badge bg-success me-2">0-10</span> Bajo
+                    </li>
+                    <li class="mb-2">
+                        <span class="badge bg-warning me-2">11-26</span> Moderado
+                    </li>
+                    <li>
+                        <span class="badge bg-danger me-2">27+</span> Alto
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Informacion -->
+        <div class="card">
+            <div class="card-body text-center text-muted small">
+                <i class="bi bi-shield-check" style="font-size: 2rem;"></i>
+                <p class="mt-2 mb-0">
+                    Esta evaluación es confidencial y solo puede ser vista por personal autorizado.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

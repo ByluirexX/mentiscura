@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Cuestionarios - Mentis Cura{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2>
+            <i class="bi bi-clipboard-check me-2"></i>
+            Cuestionarios Disponibles
+        </h2>
+        <p class="text-muted">Seleccione un cuestionario para comenzar la evaluación.</p>
+    </div>
+</div>
+
+<div class="row">
+    {% for cuestionario in cuestionarios %}
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 pregunta-card">
+            <div class="card-body">
+                <div class="d-flex align-items-start">
+                    <div class="me-3">
+                        <span class="badge bg-primary fs-5 px-3 py-2">{{ cuestionario.codigo }}</span>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h5 class="card-title mb-2">{{ cuestionario.nombre }}</h5>
+                        <p class="card-text text-muted">
+                            {{ cuestionario.descripcion or 'Cuestionario estandarizado para tamizaje.' }}
+                        </p>
+
+                        <div class="d-flex align-items-center mb-3">
+                            {% if cuestionario.codigo == 'ASSIST' %}
+                            <span class="me-3">
+                                <i class="bi bi-capsule me-1"></i>
+                                9 sustancias evaluadas
+                            </span>
+                            <span>
+                                <i class="bi bi-bar-chart me-1"></i>
+                                Puntaje por sustancia: 0-39
+                            </span>
+                            {% else %}
+                            <span class="me-3">
+                                <i class="bi bi-list-ol me-1"></i>
+                                {{ cuestionario.preguntas.count() }} preguntas
+                            </span>
+                            <span>
+                                <i class="bi bi-bar-chart me-1"></i>
+                                Puntaje: 0-{{ cuestionario.puntaje_maximo }}
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        <a href="{{ url_for('cuestionarios.ver', codigo=cuestionario.codigo) }}"
+                           class="btn btn-primary">
+                            <i class="bi bi-play-circle me-1"></i>
+                            Iniciar Cuestionario
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-light">
+                <small class="text-muted">
+                    {% if cuestionario.instrucciones %}
+                        {{ cuestionario.instrucciones[:100] }}...
+                    {% else %}
+                        Responda todas las preguntas basándose en las últimas 2 semanas.
+                    {% endif %}
+                </small>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            No hay cuestionarios disponibles en este momento.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte de Alertas - Mentis Cura</title>
+    <style>
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            color: #1a202c;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: #742a2a;
+            color: white;
+            padding: 16px 24px;
+            margin-bottom: 20px;
+        }
+        .header h1 { font-size: 18px; margin: 0 0 4px 0; }
+        .header p  { font-size: 10px; margin: 0; opacity: 0.85; }
+
+        .periodo-box {
+            background-color: #fff5f5;
+            border-left: 4px solid #742a2a;
+            padding: 8px 12px;
+            margin-bottom: 20px;
+            font-size: 10px;
+            color: #2d3748;
+        }
+
+        h2 {
+            font-size: 13px;
+            color: #742a2a;
+            border-bottom: 1px solid #fed7d7;
+            padding-bottom: 4px;
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+
+        /* Resumen total */
+        .total-box {
+            background-color: #fff5f5;
+            border: 1px solid #feb2b2;
+            padding: 10px 16px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #742a2a;
+        }
+
+        /* Tablas */
+        table.data {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 10px;
+        }
+        table.data th {
+            background-color: #742a2a;
+            color: white;
+            padding: 6px 8px;
+            text-align: left;
+        }
+        table.data td {
+            padding: 5px 8px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        table.data tr:nth-child(even) td {
+            background-color: #fff5f5;
+        }
+        table.data tfoot td {
+            background-color: #fed7d7;
+            font-weight: bold;
+            border-top: 2px solid #742a2a;
+        }
+        .text-center { text-align: center; }
+
+        /* Barra de progreso */
+        .barra-wrap { background-color: #e2e8f0; height: 8px; width: 100%; }
+        .barra-fill-dark    { height: 8px; background-color: #1a202c; }
+        .barra-fill-danger  { height: 8px; background-color: #e53e3e; }
+        .barra-fill-warning { height: 8px; background-color: #d69e2e; }
+        .barra-fill-info    { height: 8px; background-color: #3182ce; }
+        .barra-fill-success { height: 8px; background-color: #38a169; }
+
+        .footer-note {
+            font-size: 8px;
+            color: #a0aec0;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 8px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        /* Marca de agua */
+        .pdf-watermark {
+            position: fixed;
+            top: 220px;
+            left: 70px;
+            width: 420px;
+            opacity: 0.055;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Marca de agua Mentis Cura -->
+    <img class="pdf-watermark" src="/static/images/logo_mentis_cura.png" alt="">
+
+    <!-- Encabezado -->
+    <div class="header">
+        <h1>&#9889; Mentis Cura &mdash; Reporte de Alertas</h1>
+        <p>Sistema de Monitoreo Psicológico &mdash; Solo para uso interno del personal autorizado</p>
+    </div>
+
+    <!-- Período -->
+    <div class="periodo-box">
+        <strong>Período:</strong> {{ datos.periodo.etiqueta }}
+        &nbsp;&mdash;&nbsp;
+        {{ datos.periodo.fecha_desde.strftime('%d/%m/%Y') }}
+        al
+        {{ datos.periodo.fecha_hasta.strftime('%d/%m/%Y %H:%M') }}
+        &nbsp;&mdash;&nbsp;
+        {% if datos.periodo.anio_cursa %}
+            <strong>{{ datos.periodo.anio_cursa }}° Año</strong>
+        {% else %}
+            Todos los años
+        {% endif %}
+        &nbsp;&mdash;&nbsp;
+        Generado: {{ datos.periodo.fecha_hasta.strftime('%d/%m/%Y %H:%M') }} UTC
+    </div>
+
+    {% if datos.total == 0 %}
+    <p style="text-align:center; color:#718096;">No hay alertas en el período seleccionado.</p>
+    {% else %}
+
+    <!-- Total -->
+    <div class="total-box">Total de alertas en el período: {{ datos.total }}</div>
+
+    <!-- Conteo por Prioridad -->
+    <h2>Alertas por Prioridad</h2>
+    <table class="data">
+        <thead>
+            <tr>
+                <th>Prioridad</th>
+                <th class="text-center">Cantidad</th>
+                <th class="text-center">Porcentaje</th>
+                <th style="width:120px;">Barra</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Crítica</td>
+                <td class="text-center">{{ datos.conteo_prioridad.critica }}</td>
+                <td class="text-center">{{ datos.porcentajes_prioridad.critica }}%</td>
+                <td>
+                    <div class="barra-wrap">
+                        <div class="barra-fill-dark" style="width:{{ datos.porcentajes_prioridad.critica }}%;"></div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>Alta</td>
+                <td class="text-center">{{ datos.conteo_prioridad.alta }}</td>
+                <td class="text-center">{{ datos.porcentajes_prioridad.alta }}%</td>
+                <td>
+                    <div class="barra-wrap">
+                        <div class="barra-fill-danger" style="width:{{ datos.porcentajes_prioridad.alta }}%;"></div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>Media</td>
+                <td class="text-center">{{ datos.conteo_prioridad.media }}</td>
+                <td class="text-center">{{ datos.porcentajes_prioridad.media }}%</td>
+                <td>
+                    <div class="barra-wrap">
+                        <div class="barra-fill-warning" style="width:{{ datos.porcentajes_prioridad.media }}%;"></div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>Baja</td>
+                <td class="text-center">{{ datos.conteo_prioridad.baja }}</td>
+                <td class="text-center">{{ datos.porcentajes_prioridad.baja }}%</td>
+                <td>
+                    <div class="barra-wrap">
+                        <div class="barra-fill-info" style="width:{{ datos.porcentajes_prioridad.baja }}%;"></div>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td>Total</td>
+                <td class="text-center">{{ datos.total }}</td>
+                <td class="text-center">100%</td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <!-- Conteo por Estado -->
+    <h2>Alertas por Estado</h2>
+    <table class="data">
+        <thead>
+            <tr>
+                <th>Estado</th>
+                <th class="text-center">Cantidad</th>
+                <th class="text-center">Porcentaje</th>
+                <th style="width:120px;">Barra</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Pendiente</td>
+                <td class="text-center">{{ datos.conteo_estado.pendiente }}</td>
+                <td class="text-center">{{ datos.porcentajes_estado.pendiente }}%</td>
+                <td>
+                    <div class="barra-wrap">
+                        <div class="barra-fill-warning" style="width:{{ datos.porcentajes_estado.pendiente }}%;"></div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>En Revisión</td>
+                <td class="text-center">{{ datos.conteo_estado.en_revision }}</td>
+                <td class="text-center">{{ datos.porcentajes_estado.en_revision }}%</td>
+                <td>
+                    <div class="barra-wrap">
+                        <div class="barra-fill-info" style="width:{{ datos.porcentajes_estado.en_revision }}%;"></div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>Atendida</td>
+                <td class="text-center">{{ datos.conteo_estado.atendida }}</td>
+                <td class="text-center">{{ datos.porcentajes_estado.atendida }}%</td>
+                <td>
+                    <div class="barra-wrap">
+                        <div class="barra-fill-success" style="width:{{ datos.porcentajes_estado.atendida }}%;"></div>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td>Total</td>
+                <td class="text-center">{{ datos.total }}</td>
+                <td class="text-center">100%</td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <!-- Matriz Cruzada -->
+    <h2>Matriz Cruzada: Prioridad × Estado</h2>
+    <table class="data">
+        <thead>
+            <tr>
+                <th>Prioridad</th>
+                <th class="text-center">Pendiente</th>
+                <th class="text-center">En Revisión</th>
+                <th class="text-center">Atendida</th>
+                <th class="text-center">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for prioridad in datos.prioridades %}
+            {% set fila = datos.matriz[prioridad] %}
+            <tr>
+                <td>{{ prioridad|capitalize }}</td>
+                <td class="text-center">{{ fila.pendiente }}</td>
+                <td class="text-center">{{ fila.en_revision }}</td>
+                <td class="text-center">{{ fila.atendida }}</td>
+                <td class="text-center">{{ fila.pendiente + fila.en_revision + fila.atendida }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td>Total</td>
+                <td class="text-center">{{ datos.conteo_estado.pendiente }}</td>
+                <td class="text-center">{{ datos.conteo_estado.en_revision }}</td>
+                <td class="text-center">{{ datos.conteo_estado.atendida }}</td>
+                <td class="text-center">{{ datos.total }}</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    {% endif %}
+
+    <div class="footer-note">
+        Mentis Cura v1.0 &mdash; Documento de uso exclusivo del personal autorizado.
+        Este sistema NO realiza diagnósticos clínicos. Solo tamizaje y alertamiento.
+    </div>
+
+</body>
+</html>

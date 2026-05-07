@@ -1,0 +1,27 @@
+# Entorno virtual
+venv/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Variables de entorno (contiene claves secretas)
+.env
+
+# macOS
+.DS_Store
+
+# Archivos subidos por usuarios
+uploads/materiales/*
+!uploads/materiales/.gitkeep
+
+# Base de datos local
+data/
+*.db
+*.sqlite3
+
+# IDEs
+.vscode/
+.idea/

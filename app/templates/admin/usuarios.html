@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Usuarios - Administración - Mentis Cura{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('admin.index') }}">Administración</a></li>
+                <li class="breadcrumb-item active">Usuarios</li>
+            </ol>
+        </nav>
+        <h2>
+            <i class="bi bi-people me-2"></i>
+            Gestión de Usuarios
+        </h2>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('admin.nuevo_usuario') }}" class="btn btn-primary">
+            <i class="bi bi-person-plus me-1"></i>
+            Nuevo Usuario
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Nombre</th>
+                                <th>Rol</th>
+                                <th>Estado</th>
+                                <th>Último Acceso</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for usuario in usuarios %}
+                            <tr>
+                                <td>
+                                    <strong>{{ usuario.username }}</strong>
+                                    {% if usuario.identificacion %}
+                                    <br><small class="text-muted">{{ usuario.identificacion }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>{{ usuario.nombre_completo() }}</td>
+                                <td>
+                                    {% if usuario.rol.nombre == 'administrador' %}
+                                    <span class="badge bg-danger">{{ usuario.rol.nombre_display }}</span>
+                                    <!-- El rol 'orientador' se muestra con badge azul -->
+                                    {% elif usuario.rol.nombre == 'orientador' %}
+                                    <span class="badge bg-primary">{{ usuario.rol.nombre_display }}</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ usuario.rol.nombre_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if usuario.activo %}
+                                    <span class="badge bg-success">Activo</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Inactivo</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if usuario.ultimo_acceso %}
+                                    {{ usuario.ultimo_acceso.strftime('%d/%m/%Y %H:%M') }}
+                                    {% else %}
+                                    <span class="text-muted">Nunca</span>
+                                    {% endif %}
+                                </td>
+                                <!-- ================================================= -->
+                                <!-- BOTONES DE ACCION: Editar y Eliminar             -->
+                                <!-- Se agrupan con btn-group para que se vean juntos -->
+                                <!-- ================================================= -->
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <!-- Boton para editar al usuario -->
+                                        <a href="{{ url_for('admin.editar_usuario', usuario_id=usuario.id) }}"
+                                           class="btn btn-sm btn-outline-primary" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <!-- Boton para eliminar al usuario.
+                                             Solo se muestra si NO es el usuario que esta logueado
+                                             (un admin no puede eliminarse a si mismo).
+                                             Al hacer clic, abre el modal de confirmacion.
+                                             Los atributos data-* guardan la info del usuario
+                                             para mostrarla dentro del modal. -->
+                                        {% if usuario.id != current_user.id %}
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                title="Eliminar"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalEliminar"
+                                                data-usuario-id="{{ usuario.id }}"
+                                                data-usuario-nombre="{{ usuario.nombre_completo() }}"
+                                                data-usuario-username="{{ usuario.username }}">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- MODAL DE CONFIRMACION DE ELIMINACION                               -->
+<!-- Este modal aparece cuando el admin hace clic en el boton de        -->
+<!-- eliminar (icono de papelera). Pide confirmacion antes de proceder. -->
+<!-- El contenido del modal (nombre y username) se llena dinamicamente  -->
+<!-- con JavaScript segun el usuario que se quiera eliminar.            -->
+<!-- ================================================================== -->
+<div class="modal fade" id="modalEliminar" tabindex="-1" aria-labelledby="modalEliminarLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <!-- Encabezado del modal con fondo rojo para indicar accion peligrosa -->
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="modalEliminarLabel">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <!-- Cuerpo del modal: muestra los datos del usuario a eliminar -->
+            <div class="modal-body">
+                <p>¿Está seguro de que desea eliminar al siguiente usuario?</p>
+                <!-- Cuadro amarillo de advertencia con el nombre y username del usuario -->
+                <div class="alert alert-warning">
+                    <!-- El nombre se llena dinamicamente con JavaScript -->
+                    <strong id="eliminarNombre"></strong><br>
+                    <small class="text-muted">Usuario: <span id="eliminarUsername"></span></small>
+                </div>
+                <!-- Nota informativa: la eliminacion es blanda (solo desactiva) -->
+                <p class="text-muted small mb-0">
+                    <i class="bi bi-info-circle me-1"></i>
+                    El usuario será desactivado y no podrá acceder al sistema. Sus datos y evaluaciones se conservarán.
+                </p>
+            </div>
+            <!-- Pie del modal: botones de Cancelar y Eliminar -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <!-- Formulario POST que envia la solicitud de eliminacion al servidor.
+                     La URL de action se llena dinamicamente con JavaScript.
+                     Incluye el token CSRF para proteccion contra ataques. -->
+                <form id="formEliminar" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>
+                        Eliminar Usuario
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/**
+ * Script para el modal de eliminacion de usuarios.
+ *
+ * Cuando el modal se abre, lee los atributos data-* del boton que lo abrio
+ * y llena el contenido del modal con los datos del usuario seleccionado:
+ *   - data-usuario-id:      ID del usuario (para armar la URL del formulario)
+ *   - data-usuario-nombre:  Nombre completo (para mostrar en el modal)
+ *   - data-usuario-username: Nombre de usuario (para mostrar en el modal)
+ *
+ * Tambien actualiza la URL del formulario (action) para que apunte a la
+ * ruta correcta de eliminacion: /admin/usuarios/<id>/eliminar
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    // Obtener referencia al modal de eliminacion
+    const modalEliminar = document.getElementById('modalEliminar');
+
+    // Escuchar el evento 'show.bs.modal' que se dispara justo antes de abrir el modal
+    modalEliminar.addEventListener('show.bs.modal', function(event) {
+        // event.relatedTarget es el boton que abrio el modal
+        const button = event.relatedTarget;
+
+        // Leer los datos del usuario desde los atributos data-* del boton
+        const usuarioId = button.getAttribute('data-usuario-id');
+        const nombre = button.getAttribute('data-usuario-nombre');
+        const username = button.getAttribute('data-usuario-username');
+
+        // Llenar el contenido del modal con los datos del usuario
+        document.getElementById('eliminarNombre').textContent = nombre;
+        document.getElementById('eliminarUsername').textContent = username;
+
+        // Actualizar la URL del formulario para que apunte al usuario correcto
+        document.getElementById('formEliminar').action = '/admin/usuarios/' + usuarioId + '/eliminar';
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,422 @@
+{% extends "base.html" %}
+
+{% block title %}Resultado - {{ evaluacion.cuestionario.codigo }} - Mentis Cura{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.inicio') }}">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('evaluaciones.historial') }}">Historial</a></li>
+                <li class="breadcrumb-item active">Resultado</li>
+            </ol>
+        </nav>
+
+        <h2>
+            <i class="bi bi-clipboard-data me-2"></i>
+            Resultado de Evaluación
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Resultado principal -->
+    <div class="col-md-8">
+        <div class="card resultado-card border-{{ evaluacion.color_riesgo() }} mb-4">
+            <div class="card-header bg-{{ evaluacion.color_riesgo() }} {% if evaluacion.color_riesgo() in ('warning',) %}text-dark{% else %}text-white{% endif %}">
+                <h4 class="mb-0">
+                    <i class="bi bi-graph-up me-2"></i>
+                    {{ evaluacion.cuestionario.codigo }} - {{ evaluacion.cuestionario.nombre }}
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row text-center mb-4">
+                    <div class="col-md-4">
+                        <h2 class="display-4 mb-0">{{ evaluacion.puntaje_total }}</h2>
+                        <p class="text-muted">Puntaje Total</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h2 class="display-4 mb-0">/ {{ evaluacion.cuestionario.puntaje_maximo }}</h2>
+                        <p class="text-muted">Puntaje Máximo</p>
+                    </div>
+                    <div class="col-md-4 d-flex flex-column align-items-center justify-content-center">
+                        <div class="badge bg-{{ evaluacion.color_riesgo() }} px-3 py-2 text-wrap {% if evaluacion.color_riesgo() in ('warning',) %}text-dark{% else %}text-white{% endif %}"
+                             style="font-size: 0.85rem; max-width: 160px; white-space: normal; line-height: 1.4;">
+                            {{ evaluacion.etiqueta_riesgo() }}
+                        </div>
+                        <p class="text-muted mt-2 mb-0">Nivel de Riesgo</p>
+                    </div>
+                </div>
+
+                {% if evaluacion.alerta_pregunta_critica %}
+                <div class="alert alert-danger">
+                    <h5 class="alert-heading">
+                        <i class="bi bi-exclamation-octagon-fill me-2"></i>
+                        Atención Importante
+                    </h5>
+                    <p class="mb-0">
+                        Se ha detectado una respuesta que requiere atención prioritaria.
+                        Un profesional se pondrá en contacto para brindar apoyo.
+                    </p>
+                </div>
+                {% endif %}
+
+                <!-- Interpretación -->
+                <div class="mt-4">
+                    <h5><i class="bi bi-info-circle me-2"></i>Interpretación</h5>
+                    <div class="alert alert-light border">
+                        {% if evaluacion.cuestionario.codigo == 'ADNM-8' %}
+                            {% if evaluacion.nivel_riesgo == 'bajo' %}
+                            <p class="mb-0">
+                                <strong>Sin indicador significativo.</strong> El puntaje obtenido
+                                en el ADNM-8 no supera el punto de corte para trastorno adaptativo.
+                                No se identifican síntomas clínicamente significativos en este momento.
+                            </p>
+                            {% else %}
+                            <p class="mb-0">
+                                <strong>Indicador positivo.</strong> El puntaje obtenido en el ADNM-8
+                                supera el punto de corte, lo que sugiere la posible presencia de
+                                síntomas de trastorno adaptativo. Se recomienda completar el
+                                cuestionario ADNM-20 para una evaluación más detallada.
+                            </p>
+                            {% endif %}
+                        {% elif evaluacion.cuestionario.codigo == 'ADNM-20' %}
+                            {% if evaluacion.nivel_riesgo == 'bajo' %}
+                            <p class="mb-0">
+                                <strong>Sin indicador significativo.</strong> El puntaje obtenido
+                                en el ADNM-20 no alcanza el umbral para probable trastorno adaptativo.
+                                Se sugiere monitoreo periódico si la situación estresante continúa.
+                            </p>
+                            {% else %}
+                            <p class="mb-0">
+                                <strong>Probable trastorno adaptativo.</strong> El puntaje obtenido
+                                en el ADNM-20 supera el umbral clínico, lo que indica síntomas
+                                compatibles con trastorno adaptativo según criterios CIE-11.
+                                Se recomienda atención profesional prioritaria.
+                                Un orientador se pondrá en contacto.
+                            </p>
+                            {% endif %}
+                        {% elif evaluacion.cuestionario.codigo in ('IDARE-E', 'IDARE-R') %}
+                            {% set escala = 'Estado' if evaluacion.cuestionario.codigo == 'IDARE-E' else 'Rasgo' %}
+                            {% if evaluacion.nivel_riesgo == 'bajo' %}
+                            <p class="mb-0">
+                                <strong>Sin indicador significativo.</strong> El puntaje obtenido en la
+                                escala {{ escala }} del IDARE se encuentra dentro del rango esperado.
+                                No se identifican indicadores clínicamente significativos de ansiedad.
+                            </p>
+                            {% elif evaluacion.nivel_riesgo == 'moderado' %}
+                            <p class="mb-0">
+                                <strong>Ansiedad moderada.</strong> El puntaje obtenido en la
+                                escala {{ escala }} del IDARE sugiere la presencia de síntomas ansiosos
+                                de intensidad moderada. Se recomienda seguimiento y considerar
+                                estrategias de manejo del estrés.
+                            </p>
+                            {% else %}
+                            <p class="mb-0">
+                                <strong>Ansiedad elevada.</strong> El puntaje obtenido en la
+                                escala {{ escala }} del IDARE indica síntomas ansiosos de intensidad
+                                significativa. Se sugiere atención profesional prioritaria.
+                                Un orientador se pondrá en contacto.
+                            </p>
+                            {% endif %}
+                        {% elif evaluacion.cuestionario.codigo in ('IDERE-E', 'IDERE-R') %}
+                            {% set escala = 'Estado' if evaluacion.cuestionario.codigo == 'IDERE-E' else 'Rasgo' %}
+                            {% if evaluacion.nivel_riesgo == 'bajo' %}
+                            <p class="mb-0">
+                                <strong>Sin indicador significativo.</strong> El puntaje obtenido en la
+                                escala {{ escala }} del IDERE se encuentra dentro del rango esperado.
+                                No se identifican indicadores clínicamente significativos de depresión en este momento.
+                            </p>
+                            {% elif evaluacion.nivel_riesgo == 'moderado' %}
+                            <p class="mb-0">
+                                <strong>Indicador leve a moderado.</strong> El puntaje obtenido en la
+                                escala {{ escala }} del IDERE sugiere la presencia de síntomas depresivos
+                                de intensidad leve a moderada. Se recomienda seguimiento y considerar
+                                una evaluación más detallada con un profesional.
+                            </p>
+                            {% else %}
+                            <p class="mb-0">
+                                <strong>Indicador severo.</strong> El puntaje obtenido en la
+                                escala {{ escala }} del IDERE indica síntomas depresivos de intensidad
+                                significativa. Se sugiere atención profesional prioritaria.
+                                Un orientador se pondrá en contacto.
+                            </p>
+                            {% endif %}
+                        {% elif evaluacion.cuestionario.codigo == 'PHQ-2' %}
+                            {% if evaluacion.puntaje_total >= 3 %}
+                            <p class="mb-0">
+                                Un puntaje de 3 o más en el PHQ-2 sugiere la posible presencia de
+                                síntomas depresivos. Se recomienda completar el cuestionario PHQ-9
+                                para una evaluación más detallada.
+                            </p>
+                            {% else %}
+                            <p class="mb-0">
+                                El puntaje obtenido está por debajo del umbral de referencia.
+                                Sin embargo, si experimenta malestar, no dude en buscar apoyo.
+                            </p>
+                            {% endif %}
+                        {% elif evaluacion.cuestionario.codigo == 'AUDIT' %}
+                            {% if evaluacion.nivel_riesgo == 'bajo' %}
+                            <p class="mb-0">
+                                <strong>Zona I - Bajo riesgo.</strong> Su consumo de alcohol se encuentra
+                                dentro de los límites de bajo riesgo. Mantenga hábitos saludables.
+                            </p>
+                            {% elif evaluacion.nivel_riesgo == 'riesgo' %}
+                            <p class="mb-0">
+                                <strong>Zona II - Consumo de riesgo.</strong> Su patrón de consumo de alcohol
+                                podría estar afectando su salud. Se recomienda recibir consejería simple
+                                para reducir el consumo.
+                            </p>
+                            {% elif evaluacion.nivel_riesgo == 'perjudicial' %}
+                            <p class="mb-0">
+                                <strong>Zona III - Consumo perjudicial.</strong> Su consumo de alcohol está
+                                causando o puede causar daño. Se sugiere una intervención breve y
+                                monitoreo continuo.
+                            </p>
+                            {% else %}
+                            <p class="mb-0">
+                                <strong>Zona IV - Posible dependencia.</strong> Su patrón de consumo sugiere
+                                posible dependencia al alcohol. Se recomienda derivación a un especialista
+                                para evaluación diagnóstica y tratamiento.
+                            </p>
+                            {% endif %}
+                        {% else %}
+                            {% if evaluacion.nivel_riesgo == 'minimo' %}
+                            <p class="mb-0">
+                                El puntaje indica síntomas mínimos o ninguno. Continúe manteniendo
+                                hábitos saludables y busque apoyo si lo necesita.
+                            </p>
+                            {% elif evaluacion.nivel_riesgo == 'leve' %}
+                            <p class="mb-0">
+                                El puntaje indica síntomas leves. Se recomienda monitoreo periódico
+                                y considerar estrategias de bienestar.
+                            </p>
+                            {% elif evaluacion.nivel_riesgo == 'moderado' %}
+                            <p class="mb-0">
+                                El puntaje indica síntomas moderados. Se sugiere consultar con un
+                                profesional de salud mental para evaluación adicional.
+                            </p>
+                            {% else %}
+                            <p class="mb-0">
+                                El puntaje indica síntomas significativos. Es importante buscar
+                                apoyo profesional. Un orientador se pondrá en contacto.
+                            </p>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <small class="text-muted">
+                    <i class="bi bi-calendar me-1"></i>
+                    Evaluación realizada: {{ evaluacion.fecha_evaluacion.strftime('%d/%m/%Y a las %H:%M') }}
+                </small>
+            </div>
+        </div>
+
+        <!-- Recomendación de material de apoyo (solo discentes con alerta generada) -->
+        {% if not puede_ver_respuestas and (evaluacion.alerta_pregunta_critica or evaluacion.nivel_riesgo not in ('minimo', 'bajo')) %}
+        <div class="card border-primary mb-4">
+            <div class="card-body">
+                <div class="d-flex align-items-start gap-3">
+                    <i class="bi bi-book-heart text-primary" style="font-size: 2rem; flex-shrink: 0;"></i>
+                    <div>
+                        <h6 class="mb-1 text-primary">Recursos de Apoyo Psicológico</h6>
+                        <p class="mb-3 small text-muted">
+                            Tu resultado indica que podrías beneficiarte de consultar los materiales
+                            de apoyo disponibles. Encontrarás recursos especializados que pueden
+                            orientarte y apoyarte en este momento.
+                        </p>
+                        <a href="{{ url_for('materiales.listado') }}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-arrow-right-circle me-1"></i>
+                            Ver Material de Apoyo Psicológico
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Detalle de respuestas: solo visible para orientadores y administradores -->
+        {% if puede_ver_respuestas %}
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-list-check me-2"></i>
+                Detalle de Respuestas
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 60px;">#</th>
+                            <th>Pregunta</th>
+                            <th style="width: 100px;" class="text-center">Respuesta</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for respuesta in respuestas %}
+                        <tr {% if respuesta.pregunta.es_critica and respuesta.valor >= 1 %}class="table-warning"{% endif %}>
+                            <td>
+                                <span class="badge bg-secondary">{{ respuesta.pregunta.orden }}</span>
+                            </td>
+                            <td>
+                                {{ respuesta.pregunta.texto }}
+                                {% if respuesta.pregunta.es_critica %}
+                                <i class="bi bi-exclamation-triangle text-warning ms-1" title="Pregunta crítica"></i>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-{% if respuesta.valor == 0 %}success{% elif respuesta.valor == 1 %}info{% elif respuesta.valor == 2 %}warning{% else %}danger{% endif %} fs-6">
+                                    {{ respuesta.valor }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Panel lateral -->
+    <div class="col-md-4">
+        <!-- Acciones -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-lightning me-2"></i>
+                Acciones
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {% if puede_ver_respuestas %}
+                    <a href="{{ url_for('evaluaciones.imprimir_tamizaje', evaluacion_id=evaluacion.id) }}"
+                       class="btn btn-dark">
+                        <i class="bi bi-download me-2"></i>
+                        Descargar Tamizaje
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('cuestionarios.listado') }}" class="btn btn-primary">
+                        <i class="bi bi-clipboard-check me-2"></i>
+                        Nueva Evaluación
+                    </a>
+                    <a href="{{ url_for('evaluaciones.historial') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-clock-history me-2"></i>
+                        Ver Historial
+                    </a>
+                    <a href="{{ url_for('main.inicio') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-house me-2"></i>
+                        Ir a Inicio
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Escala de referencia -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-rulers me-2"></i>
+                Escala de Referencia
+            </div>
+            <div class="card-body">
+                {% if evaluacion.cuestionario.codigo == 'ADNM-8' %}
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <span class="badge bg-success me-2">8-19</span> Sin indicador
+                    </li>
+                    <li>
+                        <span class="badge bg-danger me-2">20-32</span> Indicador positivo
+                    </li>
+                </ul>
+                {% elif evaluacion.cuestionario.codigo == 'ADNM-20' %}
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <span class="badge bg-success me-2">20-46</span> Sin indicador
+                    </li>
+                    <li>
+                        <span class="badge bg-danger me-2">47-80</span> Probable TA
+                    </li>
+                </ul>
+                {% elif evaluacion.cuestionario.codigo in ('IDARE-E', 'IDARE-R') %}
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <span class="badge bg-success me-2">20-30</span> Sin indicador
+                    </li>
+                    <li class="mb-2">
+                        <span class="badge bg-warning me-2">31-44</span> Moderado
+                    </li>
+                    <li>
+                        <span class="badge bg-danger me-2">45-80</span> Elevado
+                    </li>
+                </ul>
+                {% elif evaluacion.cuestionario.codigo in ('IDERE-E', 'IDERE-R') %}
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <span class="badge bg-success me-2">20-24</span> Sin indicador
+                    </li>
+                    <li class="mb-2">
+                        <span class="badge bg-warning me-2">25-36</span> Leve a moderado
+                    </li>
+                    <li>
+                        <span class="badge bg-danger me-2">37-80</span> Severo
+                    </li>
+                </ul>
+                {% elif evaluacion.cuestionario.codigo == 'PHQ-9' %}
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <span class="badge bg-success me-2">0-4</span> Mínimo
+                    </li>
+                    <li class="mb-2">
+                        <span class="badge bg-info me-2">5-9</span> Leve
+                    </li>
+                    <li class="mb-2">
+                        <span class="badge bg-warning me-2">10-14</span> Moderado
+                    </li>
+                    <li class="mb-2">
+                        <span class="badge bg-orange me-2" style="background-color: #dd6b20;">15-19</span> Mod. Severo
+                    </li>
+                    <li>
+                        <span class="badge bg-danger me-2">20-27</span> Severo
+                    </li>
+                </ul>
+                {% elif evaluacion.cuestionario.codigo == 'AUDIT' %}
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <span class="badge bg-success me-2">0-7</span> Zona I: Bajo riesgo
+                    </li>
+                    <li class="mb-2">
+                        <span class="badge bg-info me-2">8-15</span> Zona II: Consumo de riesgo
+                    </li>
+                    <li class="mb-2">
+                        <span class="badge bg-warning me-2">16-19</span> Zona III: Consumo perjudicial
+                    </li>
+                    <li>
+                        <span class="badge bg-danger me-2">20-40</span> Zona IV: Posible dependencia
+                    </li>
+                </ul>
+                {% else %}
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <span class="badge bg-success me-2">0-2</span> Sin indicador
+                    </li>
+                    <li>
+                        <span class="badge bg-warning me-2">3-6</span> Indicador de riesgo
+                    </li>
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Información -->
+        <div class="card">
+            <div class="card-body text-center text-muted small">
+                <i class="bi bi-shield-check" style="font-size: 2rem;"></i>
+                <p class="mt-2 mb-0">
+                    Esta evaluación es confidencial y solo puede ser vista por personal autorizado.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
