@@ -1,0 +1,4 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "buildAptPackages": ["libfreetype6-dev"]
+}
