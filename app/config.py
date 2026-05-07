@@ -61,8 +61,9 @@ class Config:
     #   - localhost: Servidor donde esta PostgreSQL
     #   - 5432: Puerto por defecto de PostgreSQL
     #   - psico_monitor: Nombre de la base de datos
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+    _db_url = os.environ.get('DATABASE_URL') or \
         'postgresql://psico_user:psico123@localhost:5432/psico_monitor'
+    SQLALCHEMY_DATABASE_URI = _db_url.replace('postgres://', 'postgresql://', 1)
 
     # Desactivar el seguimiento de modificaciones (mejora rendimiento)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
